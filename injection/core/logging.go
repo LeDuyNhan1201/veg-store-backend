@@ -80,7 +80,7 @@ func UseGinRequestLogging(engine *gin.Engine) {
 	}))
 
 	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
-		zap.L().Info(fmt.Sprintf("endpoint %v %v %v %v\n", httpMethod, absolutePath, handlerName, nuHandlers))
+		zap.L().Info(fmt.Sprintf("endpoint %v %v %v %v", httpMethod, absolutePath, handlerName, nuHandlers))
 	}
 }
 
@@ -101,7 +101,7 @@ func customLoggingFormat(param gin.LogFormatterParams) map[string]interface{} {
 	return map[string]interface{}{
 		"ts":         param.TimeStamp.Format(time.RFC3339Nano),
 		"level":      "info",
-		"logger":     "zap.L()",
+		"logger":     "zap.Logger",
 		"msg":        "HTTP request",
 		"client_ip":  param.ClientIP,
 		"method":     param.Method,

@@ -47,6 +47,11 @@ func (container *Container) HttpRun() error {
 	container.Router.RegisterUserRoutes(injectUserHandler())
 	// TODO: Inject other handlers as needed
 
+	if core.Configs.Mode != "prod" && core.Configs.Mode != "production" {
+		// Register Swagger UI in non-production modes
+		container.Router.RegisterSwaggerUI()
+	}
+
 	// Run HTTP Server
 	core.Logger.Info(fmt.Sprintf("Starting HTTP server on port %s...", core.Configs.Server.Port))
 	httpServer := &http.Server{

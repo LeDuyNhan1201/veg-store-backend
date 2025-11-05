@@ -16,7 +16,7 @@ func HttpContext() gin.HandlerFunc {
 	return func(ginContext *gin.Context) {
 		httpContext := &core.HttpContext{
 			Translator: core.Translator,
-			GinContext: ginContext,
+			Gin:        ginContext,
 		}
 
 		ginContext.Set(util.AppContextKey, httpContext)

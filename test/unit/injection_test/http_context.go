@@ -11,6 +11,6 @@ func MockHttpContext(
 ) *core.HttpContext {
 	return &core.HttpContext{
 		Translator: core.Translator,
-		GinContext: ginCtx,
+		Gin:        ginCtx,
 	}
 }

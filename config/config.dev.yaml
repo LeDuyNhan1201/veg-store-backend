@@ -1,7 +1,7 @@
 server:
   port: 8080
   api_prefix: /api/
-  api_version: v1
+  api_version: v2
 
 cors:
   allowed_origins: "*"

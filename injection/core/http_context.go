@@ -10,12 +10,12 @@ import (
 This file defines the HttpContext struct, which holds shared resources for handling requests.
 It includes:
 - Translator: For handling localization and translations.
-- GinContext: The current Gin context for the request.
+- Gin: The current Gin context for the request.
 */
 
 type HttpContext struct {
 	Translator *Localizer
-	GinContext *gin.Context
+	Gin        *gin.Context
 }
 
 // GetHttpContext - Usage: httpContext := core.GetHttpContext(c) to get the HttpContext in a handler.
@@ -34,7 +34,7 @@ func GetHttpContext(ginContext *gin.Context) *HttpContext {
 
 // JSON - httpContext.JSON(statusCode, responseObject) to send a JSON response.
 func (httpContext *HttpContext) JSON(status int, obj any) {
-	httpContext.GinContext.JSON(status, obj)
+	httpContext.Gin.JSON(status, obj)
 }
 
 // T - Usage: httpContext.T("message_id", params) to get a localized message.
@@ -47,7 +47,7 @@ func (httpContext *HttpContext) T(msgID string, params ...map[string]interface{}
 
 // Locale - Usage: locale := httpContext.Locale() to retrieve the locale string.
 func (httpContext *HttpContext) Locale() string {
-	if v, ok := httpContext.GinContext.Get(util.LocaleContextKey); ok {
+	if v, ok := httpContext.Gin.Get(util.LocaleContextKey); ok {
 		return v.(string)
 	}
 	return "en"

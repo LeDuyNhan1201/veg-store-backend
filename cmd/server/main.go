@@ -11,6 +11,28 @@ import (
 	"go.uber.org/zap"
 )
 
+// @title Example API
+// @version 1.0
+// @description This is a sample server that uses JWT authentication.
+// @termsOfService http://example.com/terms/
+
+// @contact.name API Support
+// @contact.url http://example.com/support
+// @contact.email support@example.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and your JWT token.
+
+// @schemes http
+
 var (
 	appGroup errgroup.Group
 )

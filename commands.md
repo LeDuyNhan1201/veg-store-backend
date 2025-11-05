@@ -25,8 +25,19 @@ go clean -modcache
 go mod tidy
 go get -u
 
+# Air - live reload for Go apps
+go install github.com/air-verse/air@latest
+
+# i18n
 go install -v github.com/nicksnyder/go-i18n/v2/goi18n@latest
 goi18n merge i18n/active.en.toml i18n/translate.vi.toml
+
+# Swagger
+go install github.com/swaggo/swag/cmd/swag@latest
+go get -u github.com/swaggo/gin-swagger
+go get -u github.com/swaggo/files
+swag init -g main.go --dir ./cmd/server,./internal/application/dto,./internal/api -o docs
+swag init -g ./cmd/server/main.go -o cmd/docs
 
 go clean -modcache
 git config --global http.sslVerify false
