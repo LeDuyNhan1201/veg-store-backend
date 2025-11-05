@@ -1,0 +1,12 @@
+# [key]
+# one = "Message for singular"
+# other = "Message for plural"
+# description = "Message description"
+[hello]
+other = "Hello {{.name}}"
+
+[NotFound.User]
+other = "User not found"
+
+[user.created]
+other = "User created successfully"

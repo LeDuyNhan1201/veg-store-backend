@@ -1,32 +1,127 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
-# Binaries for programs and plugins
+# ===================================================
+# Go / Gin / Air / Docker optimized .gitignore (clean version)
+# ===================================================
+
+# -----------------------------
+# Go build artifacts
+# -----------------------------
 *.exe
-*.exe~
 *.dll
 *.so
 *.dylib
-
-# Test binary, built with `go test -c`
 *.test
-
-# Code coverage profiles and other test artifacts
 *.out
-coverage.*
-*.coverprofile
-profile.cov
+*.log
+*.pid
+*.prof
+*.pprof
+*.cover
+*.cov
+*.coverage
+*.tmp
+*.temp
+*.swp
+*.bak
+__debug_bin
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# -----------------------------
+# Build directories
+# -----------------------------
+bin/
+build/
+dist/
+release/
+tmp/
+temp/
 
-# Go workspace file
+# -----------------------------
+# Go modules & workspace
+# -----------------------------
 go.work
 go.work.sum
+# go.sum can be restored from go.mod if not committed
+# Uncomment next line if you prefer to keep it
+# !go.sum
 
-# env file
+# -----------------------------
+# Dependency management
+# -----------------------------
+vendor/
+
+# -----------------------------
+# Air (live reload tool)
+# -----------------------------
+.air.toml
+.air/
+tmp/
+
+# -----------------------------
+# Logs
+# -----------------------------
+logs/
+*.log
+
+# -----------------------------
+# Environment / Secrets
+# -----------------------------
 .env
+.env.*
+*.key
+*.pem
+*.crt
+secrets/
+certs/
+config/local.yaml
 
-# Editor/IDE
-# .idea/
-# .vscode/
+# -----------------------------
+# Docker
+# -----------------------------
+.docker/
+docker-compose.override.yml
+docker-compose.dev.yml
+*.tar
+*.img
+
+# -----------------------------
+# IDE / Editor config
+# -----------------------------
+.vscode/
+.idea/
+*.iml
+*.code-workspace
+*.code-workspace.*
+*.sublime-workspace
+*.sublime-project
+
+# -----------------------------
+# OS generated files
+# -----------------------------
+.DS_Store
+Thumbs.db
+
+# -----------------------------
+# Cache and profiling
+# -----------------------------
+.cache/
+.gocache/
+coverage.*
+covprofile
+profile.out
+
+# -----------------------------
+# Gin specific / custom
+# -----------------------------
+gin-bin/
+gin.log
+
+# -----------------------------
+# Databases (local dev)
+# -----------------------------
+*.db
+*.sqlite
+*.sqlite3
+
+# -----------------------------
+# Temporary test data
+# -----------------------------
+testdata/tmp/

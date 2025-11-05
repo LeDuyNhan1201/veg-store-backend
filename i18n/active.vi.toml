@@ -1,0 +1,8 @@
+[hello]
+other = "Xin chào {{.name}}"
+
+[NotFound.User]
+other = "Không Tìm thấy người dùng"
+
+[user.created]
+other = "User created successfully"
