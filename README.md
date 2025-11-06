@@ -37,7 +37,7 @@ make run-dev
 
 ## 4. ✅ Verify the Application
 Visit:  
-👉 [http://localhost:2345/api/v2/swagger-ui/index.html#](http://localhost:2345/api/v2/swagger-ui/index.html#)
+👉 [http://localhost:2345/api/v1/swagger-ui/index.html#](http://localhost:2345/api/v1/swagger-ui/index.html#)
 
 ---
 
