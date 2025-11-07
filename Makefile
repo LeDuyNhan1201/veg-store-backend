@@ -11,7 +11,7 @@ DEBUG_PORT=2346
 
 # Run all tests with coverage info
 # Usage:
-#   make test PKG=./test/unit/handler/rest_test
+#   make test PKG=./test/unit/rest_handler/rest_test
 test:
 	@echo "Running all unit tests..."
 	@go test $(PKG) $(TEST_FLAGS)
@@ -31,7 +31,7 @@ coverage:
 # Run a specific test
 # Usage:
 #   make test-one TEST=TestUserHandler/TestHello_success
-#   make test-one PKG=./test/unit/handler/rest_test TEST=TestHello_success
+#   make test-one PKG=./test/unit/rest_handler/rest_test TEST=TestHello_success
 test-one:
 	@echo "Running specific test: $(TEST)"
 	@go test $(PKG) -v -run $(TEST)
@@ -81,7 +81,7 @@ run:
 debug:
 	@echo "Running in debug mode..."
 	@#docker exec -it -uroot veg-store-backend bash -c 'cd /app && dlv exec --listen=:2345 --headless=true --api-version=2 --accept-multiclient --continue ./bin/veg-store-backend'
-	@docker exec -it -uroot veg-store-backend bash -c 'cd /app && dlv debug --build-flags="-buildvcs=false" --listen=:$(DEBUG_PORT) --headless --api-version=2 --accept-multiclient --continue ./cmd/server'
+	@docker debug --output=/tmp/bin -it -uroot veg-store-backend bash -c 'cd /app && dlv debug --build-flags="-buildvcs=false" --listen=:$(DEBUG_PORT) --headless --api-version=2 --accept-multiclient --continue ./cmd/server'
 
 run-dev:
 	@echo "Running with Hot reload..."
@@ -92,7 +92,7 @@ swagger:
 	@if ! command -v swag >/dev/null 2>&1; then \
 		echo "'swag' not found. Please run 'make prepare' first"; \
     fi
-	@swag init -g main.go --parseDependency --parseInternal --dir ./cmd/server,./internal/application/dto,./internal/api -o docs
+	@swag init -g main.go --parseDependency --parseInternal --dir ./cmd/server,./internal/application/dto,./internal/rest_api/rest_handler -o docs
 
 force-download:
 	@echo "Cleaning Go module cache..."

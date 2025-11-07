@@ -1,4 +1,4 @@
-package handler
+package rest_handler
 
 import (
 	"net/http"

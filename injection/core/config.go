@@ -25,7 +25,7 @@ Logic:
 Example YAML structure:
 server:
   port: "${SERVER_PORT:8080}"
-  api_prefix: "/restful"
+  api_prefix: "/rest_api"
   api_version: "v1"
 
 database:
@@ -35,7 +35,7 @@ database:
 ==> config Struct after unmarshalling:
 Server:
   Port: "8080"
-  ApiPrefix: "/restful"
+  ApiPrefix: "/rest_api"
   ApiVersion: "v1"
 
 Database:

@@ -2,12 +2,12 @@ package injection_test
 
 import (
 	"veg-store-backend/internal/infrastructure/router"
-	"veg-store-backend/internal/restful/handler"
+	"veg-store-backend/internal/rest_api/rest_handler"
 
 	"github.com/gin-gonic/gin"
 )
 
-func MockUserRoutes(handler *handler.UserHandler) *gin.Engine {
+func MockUserRoutes(handler *rest_handler.UserHandler) *gin.Engine {
 	mockRouter := router.NewRouter()
 	api := mockRouter.Engine.Group(mockRouter.ApiPath + "/user")
 	{

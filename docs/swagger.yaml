@@ -4,43 +4,43 @@ definitions:
     properties:
       code:
         type: string
-      data: {}
       http_status:
         type: integer
       message:
         type: string
+      repository: {}
     type: object
   dto.HttpResponse-dto_Tokens:
     properties:
       code:
         type: string
-      data:
-        $ref: '#/definitions/dto.Tokens'
       http_status:
         type: integer
       message:
         type: string
+      repository:
+        $ref: '#/definitions/dto.Tokens'
     type: object
   dto.HttpResponse-model_User:
     properties:
       code:
         type: string
-      data:
-        $ref: '#/definitions/model.User'
       http_status:
         type: integer
       message:
         type: string
+      repository:
+        $ref: '#/definitions/model.User'
     type: object
   dto.HttpResponse-string:
     properties:
       code:
         type: string
-      data:
-        type: string
       http_status:
         type: integer
       message:
+        type: string
+      repository:
         type: string
     type: object
   dto.SignInRequest:
@@ -66,6 +66,8 @@ definitions:
     properties:
       age:
         type: integer
+      id:
+        type: string
       name:
         type: string
       sex:
@@ -85,6 +87,32 @@ info:
   title: RESTFUL API VERSION 1.0
   version: "1.0"
 paths:
+  /auth/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return a token
+      parameters:
+      - description: User credentials
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SignInRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-dto_Tokens'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-string'
+      summary: Sign in a user
+      tags:
+      - auth
   /user/details/{id}:
     get:
       consumes:
@@ -123,32 +151,6 @@ paths:
           schema:
             $ref: '#/definitions/dto.HttpResponse-string'
       summary: Anh trai say hi
-      tags:
-      - users
-  /user/sign-in:
-    post:
-      consumes:
-      - application/json
-      description: Authenticate user and return a token
-      parameters:
-      - description: User credentials
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/dto.SignInRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.HttpResponse-dto_Tokens'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/dto.HttpResponse-string'
-      summary: Sign in a user
       tags:
       - users
 schemes:

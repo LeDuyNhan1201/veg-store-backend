@@ -22,6 +22,46 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
+        "/auth/sign-in": {
+            "post": {
+                "description": "Authenticate user and return a token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Sign in a user",
+                "parameters": [
+                    {
+                        "description": "User credentials",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SignInRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-dto_Tokens"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-string"
+                        }
+                    }
+                }
+            }
+        },
         "/user/details/{id}": {
             "get": {
                 "description": "Get details of a user by id",
@@ -82,46 +122,6 @@
                     }
                 }
             }
-        },
-        "/user/sign-in": {
-            "post": {
-                "description": "Authenticate user and return a token",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Sign in a user",
-                "parameters": [
-                    {
-                        "description": "User credentials",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.SignInRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HttpResponse-dto_Tokens"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HttpResponse-string"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -131,13 +131,13 @@
                 "code": {
                     "type": "string"
                 },
-                "data": {},
                 "http_status": {
                     "type": "integer"
                 },
                 "message": {
                     "type": "string"
-                }
+                },
+                "repository": {}
             }
         },
         "dto.HttpResponse-dto_Tokens": {
@@ -146,14 +146,14 @@
                 "code": {
                     "type": "string"
                 },
-                "data": {
-                    "$ref": "#/definitions/dto.Tokens"
-                },
                 "http_status": {
                     "type": "integer"
                 },
                 "message": {
                     "type": "string"
+                },
+                "repository": {
+                    "$ref": "#/definitions/dto.Tokens"
                 }
             }
         },
@@ -163,14 +163,14 @@
                 "code": {
                     "type": "string"
                 },
-                "data": {
-                    "$ref": "#/definitions/model.User"
-                },
                 "http_status": {
                     "type": "integer"
                 },
                 "message": {
                     "type": "string"
+                },
+                "repository": {
+                    "$ref": "#/definitions/model.User"
                 }
             }
         },
@@ -180,13 +180,13 @@
                 "code": {
                     "type": "string"
                 },
-                "data": {
-                    "type": "string"
-                },
                 "http_status": {
                     "type": "integer"
                 },
                 "message": {
+                    "type": "string"
+                },
+                "repository": {
                     "type": "string"
                 }
             }
@@ -224,6 +224,9 @@
             "properties": {
                 "age": {
                     "type": "integer"
+                },
+                "id": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"

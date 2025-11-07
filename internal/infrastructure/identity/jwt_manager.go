@@ -1,6 +1,7 @@
 package identity
 
 import (
+	"context"
 	"crypto/rsa"
 	"fmt"
 	"os"
@@ -21,8 +22,8 @@ type jwtManager struct {
 
 func NewJWTManager() (infra_interface.JWTManager, error) {
 	// Set config path to .../.../keypair
-	privateKeyPath := util.GetConfigPathFromGoMod("secrets/keypair") + core.Configs.JWT.PrivateKeyPath
-	publicKeyPath := util.GetConfigPathFromGoMod("secrets/keypair") + core.Configs.JWT.PublicKeyPath
+	privateKeyPath := util.GetConfigPathFromGoMod("secrets/keypair") + "/" + core.Configs.JWT.PrivateKeyPath
+	publicKeyPath := util.GetConfigPathFromGoMod("secrets/keypair") + "/" + core.Configs.JWT.PublicKeyPath
 	core.Logger.Info(fmt.Sprintf("Private key path: %s", privateKeyPath))
 	core.Logger.Info(fmt.Sprintf("Public key path: %s", publicKeyPath))
 
@@ -58,6 +59,11 @@ func (manager *jwtManager) Sign(isRefresh bool, userID string, roles ...string) 
 			core.Logger.Fatal("error to parse string to duration", zap.Error(err))
 		}
 	}
+
+	if roles == nil || len(roles) == 0 {
+		roles = []string{}
+	}
+	
 	claims := &infra_interface.JWTClaims{
 		UserID: userID,
 		Roles:  roles,
@@ -87,30 +93,27 @@ func (manager *jwtManager) Verify(tokenStr string) (*infra_interface.JWTClaims, 
 	return claims, nil
 }
 
+/*----------------------------------INJECTION--------------------------------------*/
+
 func (manager *jwtManager) Name() string { return "JWTManager" }
 func (manager *jwtManager) Start() error {
 	core.Logger.Debug(fmt.Sprintf("%s initialized", manager.Name()))
 	return nil
 }
 func (manager *jwtManager) Stop() error {
-	core.Logger.Debug(fmt.Sprintf("%s initialized", manager.Name()))
+	core.Logger.Debug(fmt.Sprintf("%s destroyed", manager.Name()))
 	return nil
 }
 
-var JWTManagerModule = fx.Options(fx.Provide(NewJWTManager))
+func RegisterJWTManager(lifecycle fx.Lifecycle, manager infra_interface.JWTManager) {
+	lifecycle.Append(fx.Hook{
+		OnStart: func(context context.Context) error {
+			return manager.Start()
+		},
+		OnStop: func(context context.Context) error {
+			return manager.Stop()
+		},
+	})
+}
 
-//func RegisterJWTManager(lifecycle fx.Lifecycle, manager infra_interface.JWTManager) {
-//	lifecycle.Append(fx.Hook{
-//		OnStart: func(context context.Context) error {
-//			return manager.Start()
-//		},
-//		OnStop: func(context context.Context) error {
-//			return manager.Stop()
-//		},
-//	})
-//}
-//
-//var JWTManagerModule = fx.Options(
-//	fx.Provide(NewJWTManager),
-//	fx.Invoke(RegisterJWTManager),
-//)
+var JWTManagerModule = fx.Options(fx.Provide(NewJWTManager), fx.Invoke(RegisterJWTManager))

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"veg-store-backend/injection/core"
 	"veg-store-backend/internal/application/dto"
@@ -51,6 +52,8 @@ func (service *authenticationService) Tokens(request dto.SignInRequest) (*dto.To
 	}, nil
 }
 
+/*----------------------------------INJECTION--------------------------------------*/
+
 func (service *authenticationService) Name() string { return "UserRepository" }
 func (service *authenticationService) Start() error {
 	core.Logger.Debug(fmt.Sprintf("%s initialized", service.Name()))
@@ -61,20 +64,15 @@ func (service *authenticationService) Stop() error {
 	return nil
 }
 
-var AuthenticationServiceModule = fx.Options(fx.Provide(NewAuthenticationService))
+func RegisterAuthenticationService(lifecycle fx.Lifecycle, service AuthenticationService) {
+	lifecycle.Append(fx.Hook{
+		OnStart: func(context context.Context) error {
+			return service.Start()
+		},
+		OnStop: func(context context.Context) error {
+			return service.Stop()
+		},
+	})
+}
 
-//func RegisterAuthenticationService(lifecycle fx.Lifecycle, service AuthenticationService) {
-//	lifecycle.Append(fx.Hook{
-//		OnStart: func(context context.Context) error {
-//			return service.Start()
-//		},
-//		OnStop: func(context context.Context) error {
-//			return service.Stop()
-//		},
-//	})
-//}
-//
-//var AuthenticationServiceModule = fx.Options(
-//	fx.Provide(NewAuthenticationService),
-//	fx.Invoke(RegisterAuthenticationService),
-//)
+var AuthenticationServiceModule = fx.Options(fx.Provide(NewAuthenticationService), fx.Invoke(RegisterAuthenticationService))

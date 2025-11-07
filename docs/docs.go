@@ -24,6 +24,46 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/sign-in": {
+            "post": {
+                "description": "Authenticate user and return a token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Sign in a user",
+                "parameters": [
+                    {
+                        "description": "User credentials",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SignInRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-dto_Tokens"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-string"
+                        }
+                    }
+                }
+            }
+        },
         "/user/details/{id}": {
             "get": {
                 "description": "Get details of a user by id",
@@ -84,46 +124,6 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/user/sign-in": {
-            "post": {
-                "description": "Authenticate user and return a token",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Sign in a user",
-                "parameters": [
-                    {
-                        "description": "User credentials",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.SignInRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HttpResponse-dto_Tokens"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HttpResponse-string"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -133,13 +133,13 @@ const docTemplate = `{
                 "code": {
                     "type": "string"
                 },
-                "repository": {},
                 "http_status": {
                     "type": "integer"
                 },
                 "message": {
                     "type": "string"
-                }
+                },
+                "repository": {}
             }
         },
         "dto.HttpResponse-dto_Tokens": {
@@ -148,14 +148,14 @@ const docTemplate = `{
                 "code": {
                     "type": "string"
                 },
-                "repository": {
-                    "$ref": "#/definitions/dto.Tokens"
-                },
                 "http_status": {
                     "type": "integer"
                 },
                 "message": {
                     "type": "string"
+                },
+                "repository": {
+                    "$ref": "#/definitions/dto.Tokens"
                 }
             }
         },
@@ -165,14 +165,14 @@ const docTemplate = `{
                 "code": {
                     "type": "string"
                 },
-                "repository": {
-                    "$ref": "#/definitions/model.User"
-                },
                 "http_status": {
                     "type": "integer"
                 },
                 "message": {
                     "type": "string"
+                },
+                "repository": {
+                    "$ref": "#/definitions/model.User"
                 }
             }
         },
@@ -182,13 +182,13 @@ const docTemplate = `{
                 "code": {
                     "type": "string"
                 },
-                "repository": {
-                    "type": "string"
-                },
                 "http_status": {
                     "type": "integer"
                 },
                 "message": {
+                    "type": "string"
+                },
+                "repository": {
                     "type": "string"
                 }
             }
@@ -226,6 +226,9 @@ const docTemplate = `{
             "properties": {
                 "age": {
                     "type": "integer"
+                },
+                "id": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"

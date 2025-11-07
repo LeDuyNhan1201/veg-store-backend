@@ -74,6 +74,15 @@ secrets/certs/
 config/local.yaml
 
 # -----------------------------
+# Delve debug binaries
+# -----------------------------
+__debug_bin*
+__debug_temp_*
+/tmp/dlv-build/
+/debug/
+/build-debug/
+
+# -----------------------------
 # Docker
 # -----------------------------
 .docker/

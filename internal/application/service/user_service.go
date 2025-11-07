@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"veg-store-backend/injection/core"
 	"veg-store-backend/internal/domain/model"
@@ -37,6 +38,7 @@ func (service *userService) FindById(id string) (*model.User, error) {
 
 	} else {
 		return &model.User{
+			ID:   id,
 			Name: "Test",
 			Age:  18,
 			Sex:  true,
@@ -50,12 +52,15 @@ func (service *userService) FindByUsername(username string) (*model.User, error)
 
 	} else {
 		return &model.User{
+			ID:   "1",
 			Name: "Test",
 			Age:  18,
 			Sex:  true,
 		}, nil
 	}
 }
+
+/*----------------------------------INJECTION--------------------------------------*/
 
 func (service *userService) Name() string { return "UserService" }
 func (service *userService) Start() error {
@@ -67,20 +72,15 @@ func (service *userService) Stop() error {
 	return nil
 }
 
-var UserServiceModule = fx.Options(fx.Provide(NewUserService))
+func RegisterUserService(lifecycle fx.Lifecycle, service UserService) {
+	lifecycle.Append(fx.Hook{
+		OnStart: func(context context.Context) error {
+			return service.Start()
+		},
+		OnStop: func(context context.Context) error {
+			return service.Stop()
+		},
+	})
+}
 
-//func RegisterUserService(lifecycle fx.Lifecycle, service UserService) {
-//	lifecycle.Append(fx.Hook{
-//		OnStart: func(context context.Context) error {
-//			return service.Start()
-//		},
-//		OnStop: func(context context.Context) error {
-//			return service.Stop()
-//		},
-//	})
-//}
-//
-//var UserServiceModule = fx.Options(
-//	fx.Provide(NewUserService),
-//	fx.Invoke(RegisterUserService),
-//)
+var UserServiceModule = fx.Options(fx.Provide(NewUserService), fx.Invoke(RegisterUserService))

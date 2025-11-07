@@ -1,4 +1,4 @@
-package handler
+package rest_handler
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 )
 
 /*
-This is a global exception handler for error from panic()
+This is a global exception rest_handler for error from panic()
 */
 
 func CustomRecoveryHandler(httpContext *core.HttpContext, recovered interface{}) {

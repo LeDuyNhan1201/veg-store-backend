@@ -7,9 +7,9 @@ import (
 	"time"
 	"veg-store-backend/docs"
 	"veg-store-backend/injection/core"
-	"veg-store-backend/internal/restful/handler"
-	"veg-store-backend/internal/restful/middleware"
-	"veg-store-backend/util"
+	//"veg-store-backend/internal/rest_api/middleware"
+	"veg-store-backend/internal/rest_api/rest_handler"
+	//"veg-store-backend/util"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -61,9 +61,9 @@ func initGinEngine() *gin.Engine {
 	// Custom log for Gin per request
 	core.UseGinRequestLogging(engine)
 
-	// Register Custom recovery handler for Gin
+	// Register Custom recovery rest_handler for Gin
 	engine.Use(gin.CustomRecovery(func(ginContext *gin.Context, recovered interface{}) {
-		handler.CustomRecoveryHandler(core.GetHttpContext(ginContext), recovered)
+		rest_handler.CustomRecoveryHandler(core.GetHttpContext(ginContext), recovered)
 	}))
 
 	err := engine.SetTrustedProxies([]string{"127.0.0.1"})
@@ -80,12 +80,12 @@ func initGinEngine() *gin.Engine {
 	}))
 
 	// Register all middlewares
-	engine.Use(
-		middleware.Locale(util.DefaultLocale),
-		middleware.HttpContext(),
-		middleware.TraceID(),
-		middleware.ErrorHandler(),
-	)
+	//engine.Use(
+	//	middleware.Locale(util.DefaultLocale),
+	//	middleware.HttpContext(),
+	//	middleware.TraceID(),
+	//	middleware.ErrorHandler(),
+	//)
 
 	return engine
 }
@@ -100,4 +100,6 @@ func (router *Router) registerSwaggerUI() {
 	ginSwagger.DefaultModelsExpandDepth(1)*/
 }
 
-var RouterModule = fx.Options(fx.Provide(NewRouter))
+/*----------------------------------INJECTION--------------------------------------*/
+
+var Module = fx.Options(fx.Provide(NewRouter))

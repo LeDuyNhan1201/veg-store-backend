@@ -3,18 +3,18 @@ package route
 import (
 	"veg-store-backend/injection/core"
 	"veg-store-backend/internal/infrastructure/router"
-	"veg-store-backend/internal/restful/handler"
+	"veg-store-backend/internal/rest_api/rest_handler"
 
 	"github.com/gin-gonic/gin"
 )
 
 type UserRoutes struct {
-	*Route[*handler.UserHandler]
+	*Route[*rest_handler.UserHandler]
 }
 
-func NewUserRoutes(userHandler *handler.UserHandler, router *router.Router) *UserRoutes {
+func NewUserRoutes(userHandler *rest_handler.UserHandler, router *router.Router) *UserRoutes {
 	return &UserRoutes{
-		Route: &Route[*handler.UserHandler]{
+		Route: &Route[*rest_handler.UserHandler]{
 			Handler: userHandler,
 			Router:  router,
 		},

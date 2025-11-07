@@ -14,22 +14,29 @@ It includes:
 */
 
 type HttpContext struct {
-	Translator *Localizer
-	Gin        *gin.Context
+	Translator      *Localizer
+	Gin             *gin.Context
+	SecurityContext *SecurityContext
 }
 
-// GetHttpContext - Usage: httpContext := core.GetHttpContext(c) to get the HttpContext in a handler.
+// GetHttpContext - Usage: httpContext := core.GetHttpContext(c) to get the HttpContext in a rest_handler.
 func GetHttpContext(ginContext *gin.Context) *HttpContext {
-	val, exists := ginContext.Get(util.AppContextKey)
-	if !exists {
-		panic("HttpContext not found in Gin context — did you forget to register AppContextMiddleware?")
-	}
+	//val, exists := ginContext.Get(util.AppContextKey)
+	//if !exists {
+	//	panic("HttpContext not found in Gin context — did you forget to register AppContextMiddleware?")
+	//}
+	//
+	//httpContext, ok := val.(*HttpContext)
+	//if !ok {
+	//	panic("HttpContext type assertion failed")
+	//}
+	//return httpContext
 
-	httpContext, ok := val.(*HttpContext)
-	if !ok {
-		panic("HttpContext type assertion failed")
+	return &HttpContext{
+		Translator:      Translator,
+		Gin:             ginContext,
+		SecurityContext: nil,
 	}
-	return httpContext
 }
 
 // JSON - httpContext.JSON(statusCode, responseObject) to send a JSON response.
@@ -51,4 +58,9 @@ func (httpContext *HttpContext) Locale() string {
 		return v.(string)
 	}
 	return "en"
+}
+
+// SetSecurityContext - Usage: httpContext.SetSecurityContext(securityContext) to set the SecurityContext.
+func (httpContext *HttpContext) SetSecurityContext(securityContext *SecurityContext) {
+	httpContext.SecurityContext = securityContext
 }

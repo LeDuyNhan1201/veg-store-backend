@@ -37,7 +37,7 @@ goi18n merge i18n/active.en.toml i18n/translate.vi.toml
 go install github.com/swaggo/swag/cmd/swag@latest
 go get -u github.com/swaggo/gin-swagger
 go get -u github.com/swaggo/files
-swag init -g main.go --parseDependency --parseInternal --dir ./cmd/server,./internal/application/dto,./internal/restful -o docs
+swag init -g main.go --parseDependency --parseInternal --dir ./cmd/server,./internal/application/dto,./internal/rest_api -o docs
 swag init -g ./cmd/server/main.go -o cmd/docs
 
 go install -v github.com/go-delve/delve/cmd/dlv@latest

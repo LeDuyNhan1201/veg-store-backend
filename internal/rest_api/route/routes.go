@@ -17,9 +17,14 @@ type Routes interface {
 	Setup()
 }
 
-func NewRoutesCollection(userRoutes *UserRoutes) RoutesCollection {
+// NewRoutesCollection IMPORTANT: REMEMBER TO ADD NEW ROUTES TO RoutesCollection
+func NewRoutesCollection(
+	userRoutes *UserRoutes,
+	authRoutes *AuthRoutes,
+) RoutesCollection {
 	return RoutesCollection{
 		userRoutes,
+		authRoutes,
 	}
 }
 
@@ -29,7 +34,9 @@ func (routesCollection RoutesCollection) Setup() {
 	}
 }
 
+// RoutesModule IMPORTANT: REMEMBER TO ADD NEW ROUTES TO RoutesModule
 var RoutesModule = fx.Options(
 	fx.Provide(NewUserRoutes),
+	fx.Provide(NewAuthRoutes),
 	fx.Provide(NewRoutesCollection),
 )

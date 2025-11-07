@@ -2,17 +2,18 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"veg-store-backend/injection/core"
 	"veg-store-backend/internal/application/exception"
 	"veg-store-backend/internal/application/service"
+	"veg-store-backend/internal/infrastructure/identity"
 	"veg-store-backend/internal/infrastructure/repository"
 	"veg-store-backend/internal/infrastructure/router"
-	"veg-store-backend/internal/restful/handler"
-	"veg-store-backend/internal/restful/route"
+	"veg-store-backend/internal/rest_api/middleware"
+	"veg-store-backend/internal/rest_api/rest_handler"
+	"veg-store-backend/internal/rest_api/route"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
@@ -44,12 +45,18 @@ import (
 func main() {
 	injectGlobalComponents(determineMode())
 
-	app := fx.New(
-		repository.UserRepositoryModule,
-		service.UserServiceModule,
-		handler.UserHandlerModule,
-		router.RouterModule,
+	dependencies := fx.Options(
+		repository.Module,
+		identity.Module,
+		service.Module,
+		rest_handler.Module,
+		router.Module,
+		middleware.Module,
 		route.RoutesModule,
+	)
+
+	app := fx.New(
+		dependencies,
 
 		fx.Invoke(func(lifecycle fx.Lifecycle, appRouter *router.Router, routesCollection route.RoutesCollection) {
 			routesCollection.Setup()
@@ -75,7 +82,7 @@ func main() {
 	startContext, cancel := context.WithTimeout(context.Background(), fx.DefaultTimeout)
 	defer cancel()
 	if err := app.Start(startContext); err != nil {
-		log.Fatal(err)
+		core.Logger.Fatal("Server failed to start: ", zap.Error(err))
 	}
 
 	// Wait for OS signal to terminate
@@ -86,7 +93,7 @@ func main() {
 	stopContext, cancel := context.WithTimeout(context.Background(), fx.DefaultTimeout)
 	defer cancel()
 	if err := app.Stop(stopContext); err != nil {
-		log.Fatal(err)
+		core.Logger.Fatal("Failed to stop application: ", zap.Error(err))
 	}
 }
 

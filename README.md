@@ -86,7 +86,7 @@ Use the PKG argument to target a specific package:
 ```bash
 # make test PKG=./test/unit/<package-you-want>
 # Example:
-make test PKG=./test/unit/handler/rest_test
+make test PKG=./test/unit/rest_handler/rest_test
 ```
 
 ## 🧩 Run a Single Test Function:

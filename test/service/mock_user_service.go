@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+	"veg-store-backend/injection/core"
 	"veg-store-backend/internal/domain/model"
 
 	"github.com/stretchr/testify/mock"
@@ -39,6 +41,14 @@ func (mockService *MockUserService) Greeting() string {
 	return args.String(0)
 }
 
+/*----------------------------------INJECTION--------------------------------------*/
+
 func (mockService *MockUserService) Name() string { return "MockUserService" }
-func (mockService *MockUserService) Start() error { return nil }
-func (mockService *MockUserService) Stop() error  { return nil }
+func (mockService *MockUserService) Start() error {
+	core.Logger.Debug(fmt.Sprintf("%s initialized", mockService.Name()))
+	return nil
+}
+func (mockService *MockUserService) Stop() error {
+	core.Logger.Debug(fmt.Sprintf("%s destroyed", mockService.Name()))
+	return nil
+}

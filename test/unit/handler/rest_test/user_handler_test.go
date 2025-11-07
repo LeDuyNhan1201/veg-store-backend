@@ -6,7 +6,7 @@ import (
 	"veg-store-backend/injection"
 	"veg-store-backend/injection/core"
 	"veg-store-backend/internal/application/dto"
-	"veg-store-backend/internal/restful/handler"
+	"veg-store-backend/internal/rest_api/rest_handler"
 	"veg-store-backend/test/service"
 	"veg-store-backend/test/unit/injection_test"
 
@@ -14,15 +14,15 @@ import (
 )
 
 type UserHandler struct {
-	*HandlerTest[*handler.UserHandler, *service.MockUserService]
+	*HandlerTest[*rest_handler.UserHandler, *service.MockUserService]
 }
 
 func setupUserHandlerTest() *UserHandler {
 	mockService := new(service.MockUserService)
-	mockHandler := handler.NewUserHandler(mockService)
+	mockHandler := rest_handler.NewUserHandler(mockService)
 	engine := injection_test.MockUserRoutes(mockHandler)
 
-	handlerTest := NewHandlerTest[*handler.UserHandler, *service.MockUserService](engine, mockHandler, mockService)
+	handlerTest := NewHandlerTest[*rest_handler.UserHandler, *service.MockUserService](engine, mockHandler, mockService)
 	return &UserHandler{
 		HandlerTest: handlerTest,
 	}

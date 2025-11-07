@@ -1,4 +1,4 @@
-package handler
+package rest_handler
 
 import (
 	"net/http"
@@ -20,13 +20,13 @@ func NewAuthHandler(authenticationService service.AuthenticationService) *AuthHa
 // SignIn godoc
 // @Summary Sign in a user
 // @Description Authenticate user and return a token
-// @Tags users
+// @Tags auth
 // @Accept json
 // @Produce json
 // @Param user body dto.SignInRequest true "User credentials"
 // @Success 200 {object} dto.HttpResponse[dto.Tokens]
 // @Failure 401 {object} dto.HttpResponse[string]
-// @Router /user/sign-in [post]
+// @Router /auth/sign-in [post]
 func (handler *AuthHandler) SignIn(context *core.HttpContext) {
 	var request dto.SignInRequest
 	var err error
@@ -54,9 +54,9 @@ func (handler *AuthHandler) SignIn(context *core.HttpContext) {
 //// @Success 200 {object} dto.HttpResponse[model.User]
 //// @Failure 400 {object} dto.HttpResponse[any]
 //// @Router /auth/info [get]
-//func (handler *AuthHandler) Info(context *core.HttpContext) {
+//func (rest_handler *AuthHandler) Info(context *core.HttpContext) {
 //	id := context.Gin.Param("id")
-//	user, err := handler.service.FindById(id)
+//	user, err := rest_handler.service.FindById(id)
 //	if err != nil {
 //		context.Gin.Error(err)
 //	} else {
