@@ -13,8 +13,10 @@ Ensure the following packages are installed:
 
 ## 2. ▶️ Initial Setup
 ```bash
-make prepare # Only run for the first time
-make start
+make prepare # Only run for the first time & should be run by WSL if using VScode (Window)
+
+make start-linux # Use when using linux
+make start-windows # Use when using VSCode (Windows)
 ```
 > ⚠️ The first run may take a while — please wait until setup completes.
 

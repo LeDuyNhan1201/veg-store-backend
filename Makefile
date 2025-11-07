@@ -57,14 +57,22 @@ prepare:
 	@go install -v github.com/go-delve/delve/cmd/dlv@latest
 	@go install -v github.com/nicksnyder/go-i18n/v2/goi18n@latest
 	@go install -v github.com/swaggo/swag/cmd/swag@latest
-	@#go install -v github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+# 	@#go install -v github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	@echo "Done"
 
-start:
+
+start-linux:
 	@echo "Starting..."
 	@sudo chown -R $(shell id -u):$(shell id -g) .
 	@sudo chmod +x scripts/*.sh
 	@./scripts/start.sh
+
+start-windows:
+	@echo "Starting (Windows)..."
+	@sudo chown -R $(shell id -u):$(shell id -g) . || true
+	@chmod +x scripts/*.sh scripts/helper/*.sh
+	@bash -c 'find scripts -type f -name "*.sh" -exec dos2unix {} \;'
+	@bash ./scripts/start.sh
 
 restart:
 	@echo "Restarting..."
