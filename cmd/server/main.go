@@ -8,6 +8,7 @@ import (
 	"veg-store-backend/injection/core"
 	"veg-store-backend/internal/application/exception"
 	"veg-store-backend/internal/application/service"
+	"veg-store-backend/internal/application/validation"
 	"veg-store-backend/internal/infrastructure/identity"
 	"veg-store-backend/internal/infrastructure/repository"
 	"veg-store-backend/internal/infrastructure/router"
@@ -43,7 +44,7 @@ import (
 // @schemes http https
 
 func main() {
-	injectGlobalComponents(determineMode())
+	injectGlobalComponents()
 
 	dependencies := fx.Options(
 		repository.Module,
@@ -97,12 +98,13 @@ func main() {
 	}
 }
 
-func injectGlobalComponents(mode string) {
-	core.Configs.Mode = mode
-	core.Logger = core.InitLogger()       // Initialize Logger
-	core.Configs = core.Load()            // Load configuration
-	core.Translator = core.InitI18n()     // Initialize i18n Translator
-	core.Error = exception.InitAppError() // Initialize App Error
+func injectGlobalComponents() {
+	core.Configs.Mode = determineMode()
+	core.Logger = core.InitLogger()                                     // Initialize Logger
+	core.Configs = core.Load()                                          // Load configuration
+	core.Translator = core.InitI18n()                                   // Initialize i18n Translator
+	core.Error = exception.InitAppError()                               // Initialize App Error
+	core.ValidationMessageKeys = validation.InitValidationMessageKeys() // Initialize Validation Message Keys
 }
 
 func determineMode() string {

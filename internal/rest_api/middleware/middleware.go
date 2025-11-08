@@ -23,12 +23,13 @@ func NewMiddleware(
 	}
 
 	// Register all middlewares
+	// IMPORTANT: THE ORDER OF MIDDLEWARES MATTERS (FIRST IN, FIRST OUT)
 	middlewaresCollection.Router.Engine.Use(
-		Locale(util.DefaultLocale),
-		//HttpContext(),
-		TraceID(),
+		Locale(util.DefaultLocale), // Locale middleware should be the first one to set the locale
+		HttpContext(),              // HttpContext middleware should be after Locale to have access to the locale
+		//JWT(jwtManager),            // JWT middleware should be after HttpContext to have access to the HttpContext
 		ErrorHandler(),
-		JWT(jwtManager),
+		TraceID(),
 	)
 	return middlewaresCollection
 }

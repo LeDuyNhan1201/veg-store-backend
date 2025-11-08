@@ -14,5 +14,5 @@ type JWTManager interface {
 	Stop() error
 
 	Sign(isRefresh bool, userID string, roles ...string) (string, error)
-	Verify(token string) (*JWTClaims, error)
+	Verify(rawToken string) (*JWTClaims, error)
 }

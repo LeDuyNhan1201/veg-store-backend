@@ -7,7 +7,7 @@
 # other = "Message for plural"
 # description = "Message description"
 [hello]
-one = "Hello {{.name}}"
+one = "Hello {{.Name}}"
 other = "Hello everyone"
 
 # ===========================================
@@ -38,6 +38,10 @@ other = "One or more provided email addresses are invalid"
 one = "The provided username is invalid"
 other = "One or more provided usernames are invalid"
 
+[Invalid.Fields]
+one = "One or more fields are invalid"
+other = "One or more fields are invalid"
+
 # ===========================================
 # Authentication Errors
 # ===========================================
@@ -53,3 +57,27 @@ other = "One or more accounts have incorrect passwords"
 [Auth.Forbidden]
 one = "You do not have permission to perform this action"
 other = "You do not have permission to perform these actions"
+
+# ===========================================
+# Validation Errors
+# ===========================================
+
+[Validation.Email]
+one = "Please provide a valid email address"
+other = "Please provide valid email addresses"
+
+[Validation.Required]
+one = "{{.Field}} cannot be empty"
+other = "{{.Field}} cannot be empty for one or more entries"
+
+[Validation.Size]
+one = "{{.Field}} must have from {{.Min}} to {{.Max}} characters"
+other = "{{.Field}} must have from {{.Min}} to {{.Max}} characters for one or more entries"
+
+[Validation.Max]
+one = "{{.Field}} cannot exceed {{.Max}} characters"
+other = "{{.Field}} cannot exceed {{.Max}} characters for one or more entries"
+
+[Validation.Min]
+one = "{{.Field}} must be at least {{.Min}} characters"
+other = "{{.Field}} must be at least {{.Min}} characters for one or more

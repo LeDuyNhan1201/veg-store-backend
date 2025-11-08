@@ -21,22 +21,22 @@ type HttpContext struct {
 
 // GetHttpContext - Usage: httpContext := core.GetHttpContext(c) to get the HttpContext in a rest_handler.
 func GetHttpContext(ginContext *gin.Context) *HttpContext {
-	//val, exists := ginContext.Get(util.AppContextKey)
-	//if !exists {
-	//	panic("HttpContext not found in Gin context — did you forget to register AppContextMiddleware?")
-	//}
-	//
-	//httpContext, ok := val.(*HttpContext)
-	//if !ok {
-	//	panic("HttpContext type assertion failed")
-	//}
-	//return httpContext
-
-	return &HttpContext{
-		Translator:      Translator,
-		Gin:             ginContext,
-		SecurityContext: nil,
+	val, exists := ginContext.Get(util.AppContextKey)
+	if !exists {
+		panic("HttpContext not found in Gin context — did you forget to register AppContextMiddleware?")
 	}
+
+	httpContext, ok := val.(*HttpContext)
+	if !ok {
+		panic("HttpContext type assertion failed")
+	}
+	return httpContext
+
+	//return &HttpContext{
+	//	Translator:      Translator,
+	//	Gin:             ginContext,
+	//	SecurityContext: nil,
+	//}
 }
 
 // JSON - httpContext.JSON(statusCode, responseObject) to send a JSON response.

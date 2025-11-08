@@ -10,3 +10,4 @@ var Error *exception.AppError
 var Configs = &Config{}
 var Logger *zap.Logger
 var Translator *Localizer
+var ValidationMessageKeys map[string]string

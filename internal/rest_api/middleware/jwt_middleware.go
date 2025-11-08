@@ -12,12 +12,13 @@ import (
 
 func JWT(jwtManager infra_interface.JWTManager) gin.HandlerFunc {
 	return func(ginContext *gin.Context) {
+		httpContext := core.GetHttpContext(ginContext)
 		authHeader := ginContext.GetHeader("Authorization")
 		if authHeader == "" {
 			ginContext.AbortWithStatusJSON(http.StatusUnauthorized, dto.HttpResponse[any]{
 				HttpStatus: http.StatusUnauthorized,
 				Code:       core.Error.Auth.Unauthenticated.Code,
-				Message:    core.Translator.Localize("en", core.Error.Auth.Unauthenticated.MessageKey),
+				Message:    core.Translator.Localize(httpContext.Locale(), core.Error.Auth.Unauthenticated.MessageKey),
 				Data:       nil,
 			})
 			return
@@ -40,7 +41,7 @@ func JWT(jwtManager infra_interface.JWTManager) gin.HandlerFunc {
 			Identity: claims.UserID,
 			Roles:    claims.Roles,
 		}
-		core.GetHttpContext(ginContext).SetSecurityContext(securityContext)
+		httpContext.SetSecurityContext(securityContext)
 
 		ginContext.Next()
 	}

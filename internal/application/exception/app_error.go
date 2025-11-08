@@ -18,6 +18,7 @@ type InvalidError struct {
 	Token    SubError
 	Email    SubError
 	Username SubError
+	Fields   SubError
 }
 
 type AuthError struct {
@@ -26,10 +27,19 @@ type AuthError struct {
 	Forbidden       SubError
 }
 
+type ValidationError struct {
+	Email    SubError
+	Required SubError
+	Size     SubError
+	Max      SubError
+	Min      SubError
+}
+
 type AppError struct {
-	NotFound NotFoundError
-	Auth     AuthError
-	Invalid  InvalidError
+	NotFound   NotFoundError
+	Auth       AuthError
+	Invalid    InvalidError
+	Validation ValidationError
 
 	errorMap map[string]SubError
 }
@@ -64,6 +74,10 @@ func InitAppError() *AppError {
 				Code:       "invalid/username",
 				MessageKey: "Invalid.Username",
 			},
+			Fields: SubError{
+				Code:       "invalid/fields",
+				MessageKey: "Invalid.Fields",
+			},
 		},
 		Auth: AuthError{
 			Unauthenticated: SubError{
@@ -77,6 +91,28 @@ func InitAppError() *AppError {
 			Forbidden: SubError{
 				Code:       "auth/forbidden",
 				MessageKey: "Auth.Forbidden",
+			},
+		},
+		Validation: ValidationError{
+			Email: SubError{
+				Code:       "validation/email",
+				MessageKey: "Validation.Email",
+			},
+			Required: SubError{
+				Code:       "validation/required",
+				MessageKey: "Validation.Required",
+			},
+			Size: SubError{
+				Code:       "validation/forbidden",
+				MessageKey: "Validation.Size",
+			},
+			Max: SubError{
+				Code:       "validation/forbidden",
+				MessageKey: "Validation.Max",
+			},
+			Min: SubError{
+				Code:       "validation/forbidden",
+				MessageKey: "Validation.Min",
 			},
 		},
 	}

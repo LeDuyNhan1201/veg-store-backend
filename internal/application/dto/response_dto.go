@@ -13,3 +13,8 @@ type Page[T any] struct {
 	Total int `json:"total"`
 	Items []T `json:"items"`
 }
+
+type ValidationError struct {
+	Field string `json:"field"`
+	Error string `json:"error"`
+}

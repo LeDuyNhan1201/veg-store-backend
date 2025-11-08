@@ -22,6 +22,10 @@ other = "Một hoặc nhiều email không hợp lệ"
 one = "Tên người dùng không hợp lệ"
 other = "Một hoặc nhiều tên người dùng không hợp lệ"
 
+[Invalid.Fields]
+one = "Một hoặc nhiều trường không hợp lệ"
+other = "Một hoặc nhiều trường không hợp lệ"
+
 [Auth.Unauthenticated]
 one = "Chưa xác thực. Vui lòng đăng nhập để tiếp tục"
 other = "Một hoặc nhiều yêu cầu chưa được xác thực"
@@ -33,3 +37,24 @@ other = "Một hoặc nhiều tài khoản có mật khẩu sai"
 [Auth.Forbidden]
 one = "Bạn không có quyền truy cập tài nguyên này"
 other = "Bạn không có quyền truy cập các tài nguyên này"
+
+[Validation.Email]
+one = "Vui lòng cung cấp địa chỉ email hợp lệ"
+other = "Vui lòng cung cấp các địa chỉ email hợp lệ"
+
+[Validation.Required]
+one = "{{.Field}} không được để trống"
+other = "{{.Field}} không được để trống cho một hoặc nhiều mục"
+
+[Validation.Size]
+one = "{{.Field}} phải có từ {{.Min}} đến {{.Max}} ký tự"
+other = "{{.Field}} phải có từ {{.Min}} đến {{.Max}} ký tự cho một hoặc nhiều mục"
+
+[Validation.Max]
+one = "{{.Field}} không được vượt quá {{.Max}} ký tự"
+other = "{{.Field}} không được vượt quá {{.Max}} ký tự cho một hoặc nhiều mục"
+
+[Validation.Min]
+one = "{{.Field}} phải có ít nhất {{.Min}} ký tự"
+other = "{{.Field}} phải có ít nhất {{.Min}} ký tự cho một hoặc nhiều mục"
+
