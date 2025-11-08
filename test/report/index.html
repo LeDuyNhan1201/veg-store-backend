@@ -3,7 +3,7 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title>middleware: Go Coverage Report</title>
+		<title>exception: Go Coverage Report</title>
 		<style>
 			body {
 				background: black;
@@ -55,25 +55,37 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">veg-store-backend/internal/api/middleware/app_context_middlware.go (100.0%)</option>
+				<option value="file0">veg-store-backend/internal/application/exception/app_error.go (71.4%)</option>
 				
-				<option value="file1">veg-store-backend/internal/api/middleware/cors_middleware.go (75.0%)</option>
+				<option value="file1">veg-store-backend/internal/application/service/authentication_service.go (0.0%)</option>
 				
-				<option value="file2">veg-store-backend/internal/api/middleware/error_handling_middleware.go (66.7%)</option>
+				<option value="file2">veg-store-backend/internal/application/service/user_service.go (0.0%)</option>
 				
-				<option value="file3">veg-store-backend/internal/api/middleware/locale_middleware.go (70.0%)</option>
+				<option value="file3">veg-store-backend/internal/application/validation/validator.go (0.0%)</option>
 				
-				<option value="file4">veg-store-backend/internal/api/middleware/trace_id_middleware.go (100.0%)</option>
+				<option value="file4">veg-store-backend/internal/infrastructure/repository/user_repository.go (0.0%)</option>
 				
-				<option value="file5">veg-store-backend/internal/api/rest/recover_handler.go (0.0%)</option>
+				<option value="file5">veg-store-backend/internal/infrastructure/router/router.go (68.2%)</option>
 				
-				<option value="file6">veg-store-backend/internal/api/rest/user_handler.go (42.9%)</option>
+				<option value="file6">veg-store-backend/internal/rest_api/middleware/error_handling_middleware.go (66.7%)</option>
 				
-				<option value="file7">veg-store-backend/internal/application/exception/app_error.go (71.4%)</option>
+				<option value="file7">veg-store-backend/internal/rest_api/middleware/http_context_middlware.go (100.0%)</option>
 				
-				<option value="file8">veg-store-backend/internal/application/service/user_service.go (0.0%)</option>
+				<option value="file8">veg-store-backend/internal/rest_api/middleware/jwt_middleware.go (0.0%)</option>
 				
-				<option value="file9">veg-store-backend/internal/infrastructure/data/user_repository.go (0.0%)</option>
+				<option value="file9">veg-store-backend/internal/rest_api/middleware/locale_middleware.go (70.0%)</option>
+				
+				<option value="file10">veg-store-backend/internal/rest_api/middleware/middleware.go (100.0%)</option>
+				
+				<option value="file11">veg-store-backend/internal/rest_api/middleware/trace_id_middleware.go (100.0%)</option>
+				
+				<option value="file12">veg-store-backend/internal/rest_api/middleware/validation_middleware.go (0.0%)</option>
+				
+				<option value="file13">veg-store-backend/internal/rest_api/rest_handler/auth_handler.go (0.0%)</option>
+				
+				<option value="file14">veg-store-backend/internal/rest_api/rest_handler/recover_handler.go (0.0%)</option>
+				
+				<option value="file15">veg-store-backend/internal/rest_api/rest_handler/user_handler.go (66.7%)</option>
 				
 				</select>
 			</div>
@@ -96,58 +108,499 @@
 		</div>
 		<div id="content">
 		
-		<pre class="file" id="file0" style="display: none">package middleware
+		<pre class="file" id="file0" style="display: none">package exception
+
+type SubError struct {
+        Code       string
+        MessageKey string
+}
+
+func (subError SubError) Error() string <span class="cov8" title="1">{
+        return subError.Code
+}</span>
+
+type NotFoundError struct {
+        User    SubError
+        Product SubError
+}
+
+type InvalidError struct {
+        Token    SubError
+        Email    SubError
+        Username SubError
+        Fields   SubError
+}
+
+type AuthError struct {
+        Unauthenticated SubError
+        WrongPassword   SubError
+        Forbidden       SubError
+}
+
+type ValidationError struct {
+        Email    SubError
+        Required SubError
+        Size     SubError
+        Max      SubError
+        Min      SubError
+}
+
+type AppError struct {
+        NotFound   NotFoundError
+        Auth       AuthError
+        Invalid    InvalidError
+        Validation ValidationError
+
+        errorMap map[string]SubError
+}
+
+func (appError *AppError) FindByCode(code string) (SubError, bool) <span class="cov0" title="0">{
+        err, ok := appError.errorMap[code]
+        return err, ok
+}</span>
+
+func InitAppError() *AppError <span class="cov8" title="1">{
+        appError := &amp;AppError{
+                NotFound: NotFoundError{
+                        User: SubError{
+                                Code:       "not_found/user",
+                                MessageKey: "NotFound.User",
+                        },
+                        Product: SubError{
+                                Code:       "not_found/product",
+                                MessageKey: "NotFound.Product",
+                        },
+                },
+                Invalid: InvalidError{
+                        Token: SubError{
+                                Code:       "invalid/token",
+                                MessageKey: "Invalid.Token",
+                        },
+                        Email: SubError{
+                                Code:       "invalid/email",
+                                MessageKey: "Invalid.Email",
+                        },
+                        Username: SubError{
+                                Code:       "invalid/username",
+                                MessageKey: "Invalid.Username",
+                        },
+                        Fields: SubError{
+                                Code:       "invalid/fields",
+                                MessageKey: "Invalid.Fields",
+                        },
+                },
+                Auth: AuthError{
+                        Unauthenticated: SubError{
+                                Code:       "auth/unauthenticated",
+                                MessageKey: "Auth.Unauthenticated",
+                        },
+                        WrongPassword: SubError{
+                                Code:       "auth/wrong-password",
+                                MessageKey: "Auth.WrongPassword",
+                        },
+                        Forbidden: SubError{
+                                Code:       "auth/forbidden",
+                                MessageKey: "Auth.Forbidden",
+                        },
+                },
+                Validation: ValidationError{
+                        Email: SubError{
+                                Code:       "validation/email",
+                                MessageKey: "Validation.Email",
+                        },
+                        Required: SubError{
+                                Code:       "validation/required",
+                                MessageKey: "Validation.Required",
+                        },
+                        Size: SubError{
+                                Code:       "validation/forbidden",
+                                MessageKey: "Validation.Size",
+                        },
+                        Max: SubError{
+                                Code:       "validation/forbidden",
+                                MessageKey: "Validation.Max",
+                        },
+                        Min: SubError{
+                                Code:       "validation/forbidden",
+                                MessageKey: "Validation.Min",
+                        },
+                },
+        }
+
+        appError.buildErrorMap()
+        return appError
+}</span>
+
+func (appError *AppError) buildErrorMap() <span class="cov8" title="1">{
+        appError.errorMap = map[string]SubError{
+                appError.NotFound.User.Code:        appError.NotFound.User,
+                appError.NotFound.Product.Code:     appError.NotFound.Product,
+                appError.Invalid.Token.Code:        appError.Invalid.Token,
+                appError.Invalid.Email.Code:        appError.Invalid.Email,
+                appError.Invalid.Username.Code:     appError.Invalid.Username,
+                appError.Auth.Unauthenticated.Code: appError.Auth.Unauthenticated,
+                appError.Auth.WrongPassword.Code:   appError.Auth.WrongPassword,
+                appError.Auth.Forbidden.Code:       appError.Auth.Forbidden,
+        }
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package service
 
 import (
+        "context"
+        "fmt"
         "veg-store-backend/injection/core"
-        "veg-store-backend/util"
+        "veg-store-backend/internal/application/dto"
+        "veg-store-backend/internal/application/infra_interface"
 
-        "github.com/gin-gonic/gin"
+        "go.uber.org/fx"
 )
 
-/*
-This middleware injects the application context into each Gin request context.
-It provides access to shared resources like configuration, logger, and localizer.
-*/
+type AuthenticationService interface {
+        Name() string
+        Start() error
+        Stop() error
 
-func HttpContext() gin.HandlerFunc <span class="cov1" title="1">{
-        return func(ginContext *gin.Context) </span><span class="cov10" title="2">{
-                httpContext := &amp;core.HttpContext{
-                        Translator: core.Translator,
-                        Gin:        ginContext,
-                }
+        Tokens(request dto.SignInRequest) (*dto.Tokens, error)
+}
 
-                ginContext.Set(util.AppContextKey, httpContext)
-                ginContext.Next()
+type authenticationService struct {
+        userService UserService
+        jwtManager  infra_interface.JWTManager
+}
+
+func NewAuthenticationService(userService UserService, jwtManager infra_interface.JWTManager) AuthenticationService <span class="cov0" title="0">{
+        return &amp;authenticationService{
+                userService: userService,
+                jwtManager:  jwtManager,
+        }
+}</span>
+
+func (service *authenticationService) Tokens(request dto.SignInRequest) (*dto.Tokens, error) <span class="cov0" title="0">{
+        var err error
+        user, err := service.userService.FindByUsername(request.Username)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, core.Error.Invalid.Username
+        }</span>
+
+        <span class="cov0" title="0">accessToken, err := service.jwtManager.Sign(false, user.ID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, core.Error.Auth.Unauthenticated
+        }</span>
+        <span class="cov0" title="0">refreshToken, err := service.jwtManager.Sign(true, user.ID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, core.Error.Auth.Unauthenticated
+        }</span>
+
+        <span class="cov0" title="0">return &amp;dto.Tokens{
+                AccessToken:  accessToken,
+                RefreshToken: refreshToken,
+        }, nil</span>
+}
+
+/*----------------------------------INJECTION--------------------------------------*/
+
+func (service *authenticationService) Name() string <span class="cov0" title="0">{ return "UserRepository" }</span>
+func (service *authenticationService) Start() error <span class="cov0" title="0">{
+        core.Logger.Debug(fmt.Sprintf("%s initialized", service.Name()))
+        return nil
+}</span>
+func (service *authenticationService) Stop() error <span class="cov0" title="0">{
+        core.Logger.Debug(fmt.Sprintf("%s initialized", service.Name()))
+        return nil
+}</span>
+
+func RegisterAuthenticationService(lifecycle fx.Lifecycle, service AuthenticationService) <span class="cov0" title="0">{
+        lifecycle.Append(fx.Hook{
+                OnStart: func(context context.Context) error </span><span class="cov0" title="0">{
+                        return service.Start()
+                }</span>,
+                OnStop: func(context context.Context) error <span class="cov0" title="0">{
+                        return service.Stop()
+                }</span>,
+        })
+}
+
+var AuthenticationServiceModule = fx.Options(fx.Provide(NewAuthenticationService), fx.Invoke(RegisterAuthenticationService))
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package service
+
+import (
+        "context"
+        "fmt"
+        "veg-store-backend/injection/core"
+        "veg-store-backend/internal/domain/model"
+        "veg-store-backend/internal/infrastructure/repository"
+
+        "go.uber.org/fx"
+)
+
+type UserService interface {
+        Name() string
+        Start() error
+        Stop() error
+
+        Greeting() string
+        FindById(id string) (*model.User, error)
+        FindByUsername(username string) (*model.User, error)
+}
+
+type userService struct {
+        repo repository.UserRepository
+}
+
+func NewUserService(repo repository.UserRepository) UserService <span class="cov0" title="0">{
+        return &amp;userService{repo: repo}
+}</span>
+
+func (service *userService) Greeting() string <span class="cov0" title="0">{
+        return "Hello"
+}</span>
+
+func (service *userService) FindById(id string) (*model.User, error) <span class="cov0" title="0">{
+        if id == "1" </span><span class="cov0" title="0">{
+                return nil, core.Error.NotFound.User
+
+        }</span> else<span class="cov0" title="0"> {
+                return &amp;model.User{
+                        ID:   id,
+                        Name: "Test",
+                        Age:  18,
+                        Sex:  true,
+                }, nil
         }</span>
 }
+
+func (service *userService) FindByUsername(username string) (*model.User, error) <span class="cov0" title="0">{
+        if username == "test" </span><span class="cov0" title="0">{
+                return nil, core.Error.NotFound.User
+
+        }</span> else<span class="cov0" title="0"> {
+                return &amp;model.User{
+                        ID:   "1",
+                        Name: "Test",
+                        Age:  18,
+                        Sex:  true,
+                }, nil
+        }</span>
+}
+
+/*----------------------------------INJECTION--------------------------------------*/
+
+func (service *userService) Name() string <span class="cov0" title="0">{ return "UserService" }</span>
+func (service *userService) Start() error <span class="cov0" title="0">{
+        core.Logger.Debug(fmt.Sprintf("%s initialized", service.Name()))
+        return nil
+}</span>
+func (service *userService) Stop() error <span class="cov0" title="0">{
+        core.Logger.Debug(fmt.Sprintf("%s initialized", service.Name()))
+        return nil
+}</span>
+
+func RegisterUserService(lifecycle fx.Lifecycle, service UserService) <span class="cov0" title="0">{
+        lifecycle.Append(fx.Hook{
+                OnStart: func(context context.Context) error </span><span class="cov0" title="0">{
+                        return service.Start()
+                }</span>,
+                OnStop: func(context context.Context) error <span class="cov0" title="0">{
+                        return service.Stop()
+                }</span>,
+        })
+}
+
+var UserServiceModule = fx.Options(fx.Provide(NewUserService), fx.Invoke(RegisterUserService))
 </pre>
 		
-		<pre class="file" id="file1" style="display: none">package middleware
+		<pre class="file" id="file3" style="display: none">package validation
 
-import (
-        "veg-store-backend/injection/core"
+import "veg-store-backend/injection/core"
 
-        "github.com/gin-gonic/gin"
-)
-
-func CORS() gin.HandlerFunc <span class="cov1" title="1">{
-        return func(ginCtx *gin.Context) </span><span class="cov10" title="2">{
-                ginCtx.Writer.Header().Set("Access-Control-Allow-Origin", core.Configs.Cors.AllowOrigins)
-                ginCtx.Writer.Header().Set("Access-Control-Allow-Methods", core.Configs.Cors.AllowMethods)
-                ginCtx.Writer.Header().Set("Access-Control-Allow-Headers", core.Configs.Cors.AllowHeaders)
-
-                if ginCtx.Request.Method == "OPTIONS" </span><span class="cov0" title="0">{
-                        ginCtx.AbortWithStatus(204)
-                        return
-                }</span>
-
-                <span class="cov10" title="2">ginCtx.Next()</span>
+func InitValidationMessageKeys() map[string]string <span class="cov0" title="0">{
+        var validationMessages = map[string]string{
+                "email":    core.Error.Validation.Required.MessageKey,
+                "required": core.Error.Validation.Required.MessageKey,
+                "no_space": core.Error.Validation.Required.MessageKey,
+                "min":      core.Error.Validation.Min.MessageKey,
+                "max":      core.Error.Validation.Max.MessageKey,
+                "size":     core.Error.Validation.Size.MessageKey,
         }
+        return validationMessages
+}</span>
+
+func HandleParamForMessageKey(messageKey, param string) map[string]interface{} <span class="cov0" title="0">{
+        params := make(map[string]interface{})
+        switch messageKey </span>{
+        case core.Error.Validation.Min.MessageKey:<span class="cov0" title="0">
+                params["Min"] = param</span>
+        case core.Error.Validation.Max.MessageKey:<span class="cov0" title="0">
+                params["Max"] = param</span>
+        case core.Error.Validation.Size.MessageKey:<span class="cov0" title="0">
+                params["Min"] = param
+                params["Max"] = param</span>
+        }
+        <span class="cov0" title="0">return params</span>
 }
 </pre>
 		
-		<pre class="file" id="file2" style="display: none">package middleware
+		<pre class="file" id="file4" style="display: none">package repository
+
+import (
+        "context"
+        "fmt"
+        "veg-store-backend/injection/core"
+
+        "go.uber.org/fx"
+)
+
+type UserRepository interface {
+        Name() string
+        Start() error
+        Stop() error
+}
+
+type userRepository struct {
+}
+
+func NewUserRepository() UserRepository <span class="cov0" title="0">{
+        return &amp;userRepository{}
+}</span>
+
+/*----------------------------------INJECTION--------------------------------------*/
+
+func (repository *userRepository) Name() string <span class="cov0" title="0">{ return "UserRepository" }</span>
+func (repository *userRepository) Start() error <span class="cov0" title="0">{
+        core.Logger.Debug(fmt.Sprintf("%s initialized", repository.Name()))
+        return nil
+}</span>
+func (repository *userRepository) Stop() error <span class="cov0" title="0">{
+        core.Logger.Debug(fmt.Sprintf("%s destroyed", repository.Name()))
+        return nil
+}</span>
+
+func RegisterUserRepository(lifecycle fx.Lifecycle, repository UserRepository) <span class="cov0" title="0">{
+        lifecycle.Append(fx.Hook{
+                OnStart: func(context context.Context) error </span><span class="cov0" title="0">{
+                        return repository.Start()
+                }</span>,
+                OnStop: func(context context.Context) error <span class="cov0" title="0">{
+                        return repository.Stop()
+                }</span>,
+        })
+}
+
+var UserRepositoryModule = fx.Options(fx.Provide(NewUserRepository), fx.Invoke(RegisterUserRepository))
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package router
+
+import (
+        "errors"
+        "fmt"
+        "net/http"
+        "time"
+        "veg-store-backend/docs"
+        "veg-store-backend/injection/core"
+        //"veg-store-backend/internal/rest_api/middleware"
+        "veg-store-backend/internal/rest_api/rest_handler"
+        //"veg-store-backend/util"
+
+        "github.com/gin-contrib/cors"
+        "github.com/gin-gonic/gin"
+        swaggerFiles "github.com/swaggo/files"
+        ginSwagger "github.com/swaggo/gin-swagger"
+        "go.uber.org/fx"
+)
+
+type Router struct {
+        ApiPath string
+        Engine  *gin.Engine
+}
+
+func NewRouter() *Router <span class="cov8" title="1">{
+        router := &amp;Router{
+                ApiPath: core.Configs.Server.ApiPrefix + core.Configs.Server.ApiVersion,
+                Engine:  initGinEngine(),
+        }
+
+        if core.Configs.Mode != "prod" &amp;&amp; core.Configs.Mode != "production" </span><span class="cov8" title="1">{
+                // Register Swagger UI in non-production modes
+                router.registerSwaggerUI()
+        }</span>
+
+        <span class="cov8" title="1">return router</span>
+}
+
+func (router *Router) HttpRun() error <span class="cov0" title="0">{
+        // Run HTTP Server
+        core.Logger.Info(fmt.Sprintf("Starting HTTP server on port %s...", core.Configs.Server.Port))
+        httpServer := &amp;http.Server{
+                Addr:           ":" + core.Configs.Server.Port,
+                Handler:        router.Engine,
+                ReadTimeout:    10 * time.Second,
+                WriteTimeout:   10 * time.Second,
+                MaxHeaderBytes: 1 &lt;&lt; 20,
+        }
+
+        if err := httpServer.ListenAndServe(); err != nil &amp;&amp; !errors.Is(err, http.ErrServerClosed) </span><span class="cov0" title="0">{
+                return fmt.Errorf("server startup failed %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+func initGinEngine() *gin.Engine <span class="cov8" title="1">{
+        engine := gin.New()
+
+        // Custom log for Gin per request
+        core.UseGinRequestLogging(engine)
+
+        // Register Custom recovery rest_handler for Gin
+        engine.Use(gin.CustomRecovery(func(ginContext *gin.Context, recovered interface{}) </span><span class="cov0" title="0">{
+                rest_handler.CustomRecoveryHandler(core.GetHttpContext(ginContext), recovered)
+        }</span>))
+
+        <span class="cov8" title="1">err := engine.SetTrustedProxies([]string{"127.0.0.1"})
+        if err != nil </span><span class="cov0" title="0">{
+                panic("Failed to set trusted proxies" + err.Error())</span>
+        }
+
+        // Configure CORS
+        <span class="cov8" title="1">engine.Use(cors.New(cors.Config{
+                AllowOrigins:     core.Configs.Cors.AllowOrigins,
+                AllowMethods:     core.Configs.Cors.AllowMethods,
+                AllowHeaders:     core.Configs.Cors.AllowHeaders,
+                AllowCredentials: core.Configs.Cors.AllowCredentials,
+        }))
+
+        // Register all middlewares
+        //engine.Use(
+        //        middleware.Locale(util.DefaultLocale),
+        //        middleware.HttpContext(),
+        //        middleware.TraceID(),
+        //        middleware.ErrorHandler(),
+        //)
+
+        return engine</span>
+}
+
+func (router *Router) registerSwaggerUI() <span class="cov8" title="1">{
+        docs.SwaggerInfo.Host = core.Configs.Swagger.Host
+        docs.SwaggerInfo.BasePath = router.ApiPath
+
+        swaggerUiPrefix := docs.SwaggerInfo.BasePath + "/swagger-ui/*any"
+        router.Engine.GET(swaggerUiPrefix, ginSwagger.WrapHandler(swaggerFiles.Handler)) /*,
+        ginSwagger.URL("http://localhost:8080"+router.ApiPath+"/swagger-ui/doc.json"),
+        ginSwagger.DefaultModelsExpandDepth(1)*/
+}</span>
+
+/*----------------------------------INJECTION--------------------------------------*/
+
+var Module = fx.Options(fx.Provide(NewRouter))
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package middleware
 
 import (
         "net/http"
@@ -224,7 +677,84 @@ func mapErrorCodeToStatus(code string) int <span class="cov1" title="1">{
 }
 </pre>
 		
-		<pre class="file" id="file3" style="display: none">package middleware
+		<pre class="file" id="file7" style="display: none">package middleware
+
+import (
+        "veg-store-backend/injection/core"
+        "veg-store-backend/util"
+
+        "github.com/gin-gonic/gin"
+)
+
+/*
+This middleware injects the application context into each Gin request context.
+It provides access to shared resources like configuration, logger, and localizer.
+*/
+
+func HttpContext() gin.HandlerFunc <span class="cov1" title="1">{
+        return func(ginContext *gin.Context) </span><span class="cov10" title="2">{
+                httpContext := &amp;core.HttpContext{
+                        Translator: core.Translator,
+                        Gin:        ginContext,
+                }
+
+                ginContext.Set(util.AppContextKey, httpContext)
+                ginContext.Next()
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package middleware
+
+import (
+        "net/http"
+        "strings"
+        "veg-store-backend/injection/core"
+        "veg-store-backend/internal/application/dto"
+        "veg-store-backend/internal/application/infra_interface"
+
+        "github.com/gin-gonic/gin"
+)
+
+func JWT(jwtManager infra_interface.JWTManager) gin.HandlerFunc <span class="cov0" title="0">{
+        return func(ginContext *gin.Context) </span><span class="cov0" title="0">{
+                httpContext := core.GetHttpContext(ginContext)
+                authHeader := ginContext.GetHeader("Authorization")
+                if authHeader == "" </span><span class="cov0" title="0">{
+                        ginContext.AbortWithStatusJSON(http.StatusUnauthorized, dto.HttpResponse[any]{
+                                HttpStatus: http.StatusUnauthorized,
+                                Code:       core.Error.Auth.Unauthenticated.Code,
+                                Message:    core.Translator.Localize(httpContext.Locale(), core.Error.Auth.Unauthenticated.MessageKey),
+                                Data:       nil,
+                        })
+                        return
+                }</span>
+
+                <span class="cov0" title="0">rawToken := strings.TrimPrefix(authHeader, "Bearer ")
+                claims, err := jwtManager.Verify(rawToken)
+                if err != nil </span><span class="cov0" title="0">{
+                        ginContext.AbortWithStatusJSON(http.StatusUnauthorized, dto.HttpResponse[any]{
+                                HttpStatus: http.StatusUnauthorized,
+                                Code:       core.Error.Invalid.Token.Code,
+                                Message:    core.Translator.Localize("en", core.Error.Invalid.Token.MessageKey),
+                                Data:       nil,
+                        })
+                        return
+                }</span>
+
+                // Register SecurityContext in HttpContext
+                <span class="cov0" title="0">securityContext := &amp;core.SecurityContext{
+                        Identity: claims.UserID,
+                        Roles:    claims.Roles,
+                }
+                httpContext.SetSecurityContext(securityContext)
+
+                ginContext.Next()</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package middleware
 
 import (
         "fmt"
@@ -259,7 +789,46 @@ func Locale(defaultLocale string) gin.HandlerFunc <span class="cov1" title="1">{
 }
 </pre>
 		
-		<pre class="file" id="file4" style="display: none">package middleware
+		<pre class="file" id="file10" style="display: none">package middleware
+
+import (
+        "veg-store-backend/internal/application/infra_interface"
+        "veg-store-backend/internal/infrastructure/router"
+        "veg-store-backend/util"
+
+        "go.uber.org/fx"
+)
+
+type MiddlewaresCollection struct {
+        Router     *router.Router
+        JWTManager infra_interface.JWTManager
+}
+
+func NewMiddlewareCollections(
+        router *router.Router,
+        jwtManager infra_interface.JWTManager,
+) MiddlewaresCollection <span class="cov8" title="1">{
+        middlewaresCollection := MiddlewaresCollection{
+                Router:     router,
+                JWTManager: jwtManager,
+        }
+
+        // Register all middlewares
+        // IMPORTANT: THE ORDER OF MIDDLEWARES MATTERS (FIRST IN, FIRST OUT)
+        middlewaresCollection.Router.Engine.Use(
+                Locale(util.DefaultLocale), // Locale middleware should be the first one to set the locale
+                HttpContext(),              // HttpContext middleware should be after Locale to have access to the locale
+                //JWT(jwtManager),            // JWT middleware should be after HttpContext to have access to the HttpContext
+                ErrorHandler(),
+                TraceID(),
+        )
+        return middlewaresCollection
+}</span>
+
+var Module = fx.Options(fx.Invoke(NewMiddlewareCollections))
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package middleware
 
 import (
         "veg-store-backend/util"
@@ -281,7 +850,139 @@ func TraceID() gin.HandlerFunc <span class="cov1" title="1">{
 }
 </pre>
 		
-		<pre class="file" id="file5" style="display: none">package rest
+		<pre class="file" id="file12" style="display: none">package middleware
+
+import (
+        "errors"
+        "fmt"
+        "net/http"
+        "veg-store-backend/injection/core"
+        "veg-store-backend/internal/application/dto"
+        "veg-store-backend/internal/application/validation"
+
+        "github.com/gin-gonic/gin"
+        "github.com/go-playground/validator/v10"
+)
+
+func ValidationErrorMiddleware() gin.HandlerFunc <span class="cov0" title="0">{
+        return func(ginContext *gin.Context) </span><span class="cov0" title="0">{
+                ginContext.Next()
+
+                err := ginContext.Errors.Last()
+                if err == nil </span><span class="cov0" title="0">{
+                        return
+                }</span>
+
+                <span class="cov0" title="0">httpContext := core.GetHttpContext(ginContext)
+                var validationErrors validator.ValidationErrors
+                var validationErrorDTO []dto.ValidationError
+                if errors.As(err.Err, &amp;validationErrors) </span><span class="cov0" title="0">{
+                        validationErrorDTO = make([]dto.ValidationError, 0)
+                        for _, fieldError := range validationErrors </span><span class="cov0" title="0">{
+                                field := handleField(httpContext.Locale(), fieldError.Field())
+                                errorParam := fieldError.Param()
+                                errorMessage := handleFieldError(httpContext.Locale(), field, fieldError.Tag(), errorParam)
+                                validationErrorDTO = append(validationErrorDTO, dto.ValidationError{
+                                        Field: field,
+                                        Error: errorMessage,
+                                })
+                        }</span>
+
+                        <span class="cov0" title="0">ginContext.JSON(http.StatusBadRequest, dto.HttpResponse[[]dto.ValidationError]{
+                                HttpStatus: http.StatusBadRequest,
+                                Code:       core.Error.Invalid.Fields.Code,
+                                Message:    core.Translator.T(httpContext.Locale(), core.Error.Invalid.Fields.MessageKey),
+                                Data:       validationErrorDTO,
+                        })
+                        ginContext.Abort()</span>
+                }
+        }
+}
+
+func handleField(locale, field string) string <span class="cov0" title="0">{
+        messageKey := fmt.Sprintf("Field.%s", field)
+        return core.Translator.T(locale, messageKey)
+}</span>
+
+func handleFieldError(locale, field, errorKey string, params string) string <span class="cov0" title="0">{
+        messageKey := core.ValidationMessageKeys[field]
+        return core.Translator.T(locale, messageKey, validation.HandleParamForMessageKey(messageKey, params))
+}</span>
+</pre>
+		
+		<pre class="file" id="file13" style="display: none">package rest_handler
+
+import (
+        "net/http"
+        "veg-store-backend/injection/core"
+        "veg-store-backend/internal/application/dto"
+        "veg-store-backend/internal/application/service"
+
+        "go.uber.org/fx"
+)
+
+type AuthHandler struct {
+        service service.AuthenticationService
+}
+
+func NewAuthHandler(authenticationService service.AuthenticationService) *AuthHandler <span class="cov0" title="0">{
+        return &amp;AuthHandler{service: authenticationService}
+}</span>
+
+// SignIn godoc
+// @Summary Sign in a user
+// @Description Authenticate user and return a token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param user body dto.SignInRequest true "User credentials"
+// @Success 200 {object} dto.HttpResponse[dto.Tokens]
+// @Failure 401 {object} dto.HttpResponse[string]
+// @Router /auth/sign-in [post]
+func (handler *AuthHandler) SignIn(context *core.HttpContext) <span class="cov0" title="0">{
+        var request dto.SignInRequest
+        var err error
+
+        err = context.Gin.ShouldBindJSON(&amp;request)
+        tokens, err := handler.service.Tokens(request)
+        if err != nil </span><span class="cov0" title="0">{
+                context.Gin.Error(core.Error.Auth.Unauthenticated)
+                return
+        }</span>
+
+        <span class="cov0" title="0">context.JSON(http.StatusOK, dto.HttpResponse[dto.Tokens]{
+                HttpStatus: http.StatusOK,
+                Data:       *tokens,
+        })</span>
+}
+
+//// Info godoc
+//// @Summary User details
+//// @Description Get details of a user by id
+//// @Tags users
+//// @Accept json
+//// @Produce json
+//// @Param id path string true "user id"
+//// @Success 200 {object} dto.HttpResponse[model.User]
+//// @Failure 400 {object} dto.HttpResponse[any]
+//// @Router /auth/info [get]
+//func (rest_handler *AuthHandler) Info(context *core.HttpContext) {
+//        id := context.Gin.Param("id")
+//        user, err := rest_handler.service.FindById(id)
+//        if err != nil {
+//                context.Gin.Error(err)
+//        } else {
+//                context.JSON(http.StatusOK, dto.HttpResponse[*model.User]{
+//                        HttpStatus: http.StatusOK,
+//                        Data:       user,
+//                })
+//        }
+//}
+
+var AuthHandlerModule = fx.Options(fx.Provide(NewAuthHandler))
+</pre>
+		
+		<pre class="file" id="file14" style="display: none">package rest_handler
 
 import (
         "fmt"
@@ -294,7 +995,7 @@ import (
 )
 
 /*
-This is a global exception handler for error from panic()
+This is a global exception rest_handler for error from panic()
 */
 
 func CustomRecoveryHandler(httpContext *core.HttpContext, recovered interface{}) <span class="cov0" title="0">{
@@ -310,7 +1011,7 @@ func CustomRecoveryHandler(httpContext *core.HttpContext, recovered interface{})
 }</span>
 </pre>
 		
-		<pre class="file" id="file6" style="display: none">package rest
+		<pre class="file" id="file15" style="display: none">package rest_handler
 
 import (
         "net/http"
@@ -320,6 +1021,7 @@ import (
         "veg-store-backend/internal/domain/model"
 
         "github.com/gin-gonic/gin"
+        "go.uber.org/fx"
 )
 
 type UserHandler struct {
@@ -341,37 +1043,11 @@ func NewUserHandler(userService service.UserService) *UserHandler <span class="c
 func (handler *UserHandler) Hello(context *core.HttpContext) <span class="cov8" title="1">{
         context.JSON(http.StatusOK, gin.H{
                 "message": context.T(handler.service.Greeting(), map[string]interface{}{
-                        "name": "Ben",
+                        "Name":  "Ben",
+                        "Count": 1,
                 }),
         })
 }</span>
-
-// SignIn godoc
-// @Summary Sign in a user
-// @Description Authenticate user and return a token
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param user body dto.SignInRequest true "User credentials"
-// @Success 200 {object} dto.HttpResponse[dto.Tokens]
-// @Failure 401 {object} dto.HttpResponse[string]
-// @Router /user/sign-in [post]
-func (handler *UserHandler) SignIn(context *core.HttpContext) <span class="cov0" title="0">{
-        var request dto.SignInRequest
-
-        if err := context.Gin.ShouldBindJSON(&amp;request); err != nil </span><span class="cov0" title="0">{
-                context.Gin.Error(core.Error.Auth.Unauthenticated)
-                return
-        }</span>
-
-        <span class="cov0" title="0">context.JSON(http.StatusOK, dto.HttpResponse[dto.Tokens]{
-                HttpStatus: http.StatusOK,
-                Data: dto.Tokens{
-                        AccessToken:  "mock_access_token",
-                        RefreshToken: "mock_refresh_token",
-                },
-        })</span>
-}
 
 // Details godoc
 // @Summary User details
@@ -405,159 +1081,8 @@ func (handler *UserHandler) GetAllUsers(ctx *core.HttpContext) <span class="cov0
                 "users": []string{"Alice", "Bob", "Charlie"},
         })
 }</span>
-</pre>
-		
-		<pre class="file" id="file7" style="display: none">package exception
 
-type SubError struct {
-        Code       string
-        MessageKey string
-}
-
-func (subError SubError) Error() string <span class="cov8" title="1">{
-        return subError.Code
-}</span>
-
-type NotFoundError struct {
-        User    SubError
-        Product SubError
-}
-
-type InvalidError struct {
-        Token    SubError
-        Email    SubError
-        Username SubError
-}
-
-type AuthError struct {
-        Unauthenticated SubError
-        WrongPassword   SubError
-        Forbidden       SubError
-}
-
-type AppError struct {
-        NotFound NotFoundError
-        Auth     AuthError
-        Invalid  InvalidError
-
-        errorMap map[string]SubError
-}
-
-func (appError *AppError) FindByCode(code string) (SubError, bool) <span class="cov0" title="0">{
-        err, ok := appError.errorMap[code]
-        return err, ok
-}</span>
-
-func InitAppError() *AppError <span class="cov8" title="1">{
-        appError := &amp;AppError{
-                NotFound: NotFoundError{
-                        User: SubError{
-                                Code:       "not_found/user",
-                                MessageKey: "NotFound.User",
-                        },
-                        Product: SubError{
-                                Code:       "not_found/product",
-                                MessageKey: "NotFound.Product",
-                        },
-                },
-                Invalid: InvalidError{
-                        Token: SubError{
-                                Code:       "invalid/token",
-                                MessageKey: "Invalid.Token",
-                        },
-                        Email: SubError{
-                                Code:       "invalid/email",
-                                MessageKey: "Invalid.Email",
-                        },
-                        Username: SubError{
-                                Code:       "invalid/username",
-                                MessageKey: "Invalid.Username",
-                        },
-                },
-                Auth: AuthError{
-                        Unauthenticated: SubError{
-                                Code:       "auth/unauthenticated",
-                                MessageKey: "Auth.Unauthenticated",
-                        },
-                        WrongPassword: SubError{
-                                Code:       "auth/wrong-password",
-                                MessageKey: "Auth.WrongPassword",
-                        },
-                        Forbidden: SubError{
-                                Code:       "auth/forbidden",
-                                MessageKey: "Auth.Forbidden",
-                        },
-                },
-        }
-
-        appError.buildErrorMap()
-        return appError
-}</span>
-
-func (appError *AppError) buildErrorMap() <span class="cov8" title="1">{
-        appError.errorMap = map[string]SubError{
-                appError.NotFound.User.Code:        appError.NotFound.User,
-                appError.NotFound.Product.Code:     appError.NotFound.Product,
-                appError.Invalid.Token.Code:        appError.Invalid.Token,
-                appError.Invalid.Email.Code:        appError.Invalid.Email,
-                appError.Invalid.Username.Code:     appError.Invalid.Username,
-                appError.Auth.Unauthenticated.Code: appError.Auth.Unauthenticated,
-                appError.Auth.WrongPassword.Code:   appError.Auth.WrongPassword,
-                appError.Auth.Forbidden.Code:       appError.Auth.Forbidden,
-        }
-}</span>
-</pre>
-		
-		<pre class="file" id="file8" style="display: none">package service
-
-import (
-        "veg-store-backend/injection/core"
-        "veg-store-backend/internal/domain/model"
-        "veg-store-backend/internal/infrastructure/data"
-)
-
-type UserService interface {
-        Greeting() string
-        FindById(id string) (*model.User, error)
-}
-
-type userService struct {
-        repo data.UserRepository
-}
-
-func NewUserService(repo data.UserRepository) UserService <span class="cov0" title="0">{
-        return &amp;userService{repo: repo}
-}</span>
-
-func (service *userService) Greeting() string <span class="cov0" title="0">{
-        return "hello"
-}</span>
-
-func (service *userService) FindById(id string) (*model.User, error) <span class="cov0" title="0">{
-        if id == "1" </span><span class="cov0" title="0">{
-                return nil, core.Error.NotFound.User
-
-        }</span> else<span class="cov0" title="0"> {
-                return &amp;model.User{
-                        Name: "Test",
-                        Age:  18,
-                        Sex:  true,
-                }, nil
-        }</span>
-}
-</pre>
-		
-		<pre class="file" id="file9" style="display: none">package data
-
-type UserRepository interface {
-}
-
-type userRepository struct {
-}
-
-func NewUserRepository() UserRepository <span class="cov0" title="0">{
-        return &amp;userRepository{}
-}</span>
+var UserHandlerModule = fx.Options(fx.Provide(NewUserHandler))
 </pre>
 		
 		</div>

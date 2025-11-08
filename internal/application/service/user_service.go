@@ -29,7 +29,7 @@ func NewUserService(repo repository.UserRepository) UserService {
 }
 
 func (service *userService) Greeting() string {
-	return "hello"
+	return "Hello"
 }
 
 func (service *userService) FindById(id string) (*model.User, error) {

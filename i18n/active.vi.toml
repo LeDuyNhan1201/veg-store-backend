@@ -1,26 +1,56 @@
-[hello]
-one = "Xin chào {{.name}}"
+[Hello]
+one = "Xin chào {{.Name}}"
 other = "Xin chào {{.Count}} bạn"
+
+[Field.Email]
+other = "Email"
+
+[Field.Username]
+other = "Tên người dùng"
+
+[Field.Password]
+other = "Mật khẩu"
+
+[Field.ConfirmPassword]
+other = "Xác nhận mật khẩu"
+
+[Field.OldPassword]
+other = "Mật khẩu cũ"
+
+[Field.NewPassword]
+other = "Mật khẩu mới"
+
+[Field.FirstName]
+other = "Tên"
+
+[Field.LastName]
+other = "Họ"
+
+[Field.FullName]
+other = "Họ và tên"
+
+[Field.Phone]
+other = "Số điện thoại"
 
 [NotFound.User]
 one = "Không tìm thấy người dùng"
-other = "Không tìm thấy người dùng nào"
+other = "Không tìm thấy người dùng"
 
 [NotFound.Product]
 one = "Không tìm thấy sản phẩm"
-other = "Không tìm thấy sản phẩm nào"
+other = "Không tìm thấy sản phẩm"
 
 [Invalid.Token]
 one = "Token không hợp lệ"
-other = "Một hoặc nhiều token không hợp lệ"
+other = "Token không hợp lệ"
 
 [Invalid.Email]
 one = "Email không hợp lệ"
-other = "Một hoặc nhiều email không hợp lệ"
+other = "Email không hợp lệ"
 
 [Invalid.Username]
 one = "Tên người dùng không hợp lệ"
-other = "Một hoặc nhiều tên người dùng không hợp lệ"
+other = "Tên người dùng không hợp lệ"
 
 [Invalid.Fields]
 one = "Một hoặc nhiều trường không hợp lệ"
@@ -28,33 +58,33 @@ other = "Một hoặc nhiều trường không hợp lệ"
 
 [Auth.Unauthenticated]
 one = "Chưa xác thực. Vui lòng đăng nhập để tiếp tục"
-other = "Một hoặc nhiều yêu cầu chưa được xác thực"
+other = "Chưa xác thực. Vui lòng đăng nhập để tiếp tục"
 
 [Auth.WrongPassword]
 one = "Sai mật khẩu. Vui lòng thử lại"
-other = "Một hoặc nhiều tài khoản có mật khẩu sai"
+other = "Sai mật khẩu. Vui lòng thử lại"
 
 [Auth.Forbidden]
 one = "Bạn không có quyền truy cập tài nguyên này"
-other = "Bạn không có quyền truy cập các tài nguyên này"
+other = "Bạn không có quyền truy cập tài nguyên này"
 
 [Validation.Email]
 one = "Vui lòng cung cấp địa chỉ email hợp lệ"
-other = "Vui lòng cung cấp các địa chỉ email hợp lệ"
+other = "Vui lòng cung cấp địa chỉ email hợp lệ"
 
 [Validation.Required]
 one = "{{.Field}} không được để trống"
-other = "{{.Field}} không được để trống cho một hoặc nhiều mục"
+other = "{{.Field}} không được để trống"
 
 [Validation.Size]
 one = "{{.Field}} phải có từ {{.Min}} đến {{.Max}} ký tự"
-other = "{{.Field}} phải có từ {{.Min}} đến {{.Max}} ký tự cho một hoặc nhiều mục"
+other = "{{.Field}} phải có từ {{.Min}} đến {{.Max}} ký tự"
 
 [Validation.Max]
 one = "{{.Field}} không được vượt quá {{.Max}} ký tự"
-other = "{{.Field}} không được vượt quá {{.Max}} ký tự cho một hoặc nhiều mục"
+other = "{{.Field}} không được vượt quá {{.Max}} ký tự"
 
 [Validation.Min]
 one = "{{.Field}} phải có ít nhất {{.Min}} ký tự"
-other = "{{.Field}} phải có ít nhất {{.Min}} ký tự cho một hoặc nhiều mục"
+other = "{{.Field}} phải có ít nhất {{.Min}} ký tự"
 

@@ -4,43 +4,43 @@ definitions:
     properties:
       code:
         type: string
+      data: {}
       http_status:
         type: integer
       message:
         type: string
-      repository: {}
     type: object
   dto.HttpResponse-dto_Tokens:
     properties:
       code:
         type: string
+      data:
+        $ref: '#/definitions/dto.Tokens'
       http_status:
         type: integer
       message:
         type: string
-      repository:
-        $ref: '#/definitions/dto.Tokens'
     type: object
   dto.HttpResponse-model_User:
     properties:
       code:
         type: string
+      data:
+        $ref: '#/definitions/model.User'
       http_status:
         type: integer
       message:
         type: string
-      repository:
-        $ref: '#/definitions/model.User'
     type: object
   dto.HttpResponse-string:
     properties:
       code:
         type: string
+      data:
+        type: string
       http_status:
         type: integer
       message:
-        type: string
-      repository:
         type: string
     type: object
   dto.SignInRequest:
@@ -113,6 +113,21 @@ paths:
       summary: Sign in a user
       tags:
       - auth
+  /heath:
+    get:
+      description: Check if the server is running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health Check
+      tags:
+      - health
   /user/details/{id}:
     get:
       consumes:

@@ -22,29 +22,29 @@ type jwtManager struct {
 
 func NewJWTManager() (infra_interface.JWTManager, error) {
 	// Set config path to .../.../keypair
-	privateKeyPath := util.GetConfigPathFromGoMod("secrets/keypair") + "/" + core.Configs.JWT.PrivateKeyPath
-	publicKeyPath := util.GetConfigPathFromGoMod("secrets/keypair") + "/" + core.Configs.JWT.PublicKeyPath
+	privateKeyPath := util.GetConfigPathFromGoMod("secrets/keypair") + "/" + core.Configs.JWT.PrivateKey
+	publicKeyPath := util.GetConfigPathFromGoMod("secrets/keypair") + "/" + core.Configs.JWT.PublicKey
 	core.Logger.Info(fmt.Sprintf("Private key path: %s", privateKeyPath))
 	core.Logger.Info(fmt.Sprintf("Public key path: %s", publicKeyPath))
 
 	privateKeyBytes, err := os.ReadFile(privateKeyPath)
 	if err != nil {
-		core.Logger.Fatal("error to read private key", zap.Error(err))
+		core.Logger.Fatal("Error to read private key", zap.Error(err))
 	}
 
 	publicKeyBytes, err := os.ReadFile(publicKeyPath)
 	if err != nil {
-		core.Logger.Fatal("error to read public key", zap.Error(err))
+		core.Logger.Fatal("Error to read public key", zap.Error(err))
 	}
 
 	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyBytes)
 	if err != nil {
-		core.Logger.Fatal("error to parse private key", zap.Error(err))
+		core.Logger.Fatal("Error to parse private key", zap.Error(err))
 	}
 
 	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(publicKeyBytes)
 	if err != nil {
-		core.Logger.Fatal("error to parse public key", zap.Error(err))
+		core.Logger.Fatal("Error to parse public key", zap.Error(err))
 	}
 
 	return &jwtManager{privateKey, publicKey}, nil
@@ -56,14 +56,14 @@ func (manager *jwtManager) Sign(isRefresh bool, userID string, roles ...string) 
 	if isRefresh {
 		Expiration, err = util.ParseDuration(core.Configs.JWT.RefreshDuration)
 		if err != nil {
-			core.Logger.Fatal("error to parse string to duration", zap.Error(err))
+			core.Logger.Fatal("Error to parse string to duration", zap.Error(err))
 		}
 	}
 
 	if roles == nil || len(roles) == 0 {
 		roles = []string{}
 	}
-	
+
 	claims := &infra_interface.JWTClaims{
 		UserID: userID,
 		Roles:  roles,
@@ -83,12 +83,12 @@ func (manager *jwtManager) Verify(tokenStr string) (*infra_interface.JWTClaims, 
 		return manager.publicKey, nil
 	})
 	if err != nil {
-		core.Logger.Fatal("invalid token", zap.Error(err))
+		core.Logger.Fatal("Invalid token", zap.Error(err))
 	}
 
 	claims, ok := token.Claims.(*infra_interface.JWTClaims)
 	if !ok || !token.Valid {
-		core.Logger.Fatal("invalid claims", zap.Error(err))
+		core.Logger.Fatal("Invalid claims", zap.Error(err))
 	}
 	return claims, nil
 }

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 	"veg-store-backend/injection/core"
@@ -9,26 +10,44 @@ import (
 	"veg-store-backend/util"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 )
 
 func ErrorHandler() gin.HandlerFunc {
 	return func(ginContext *gin.Context) {
+		core.Logger.Debug("[BEFORE] ErrorHandler invoked")
 		ginContext.Next()
+		core.Logger.Debug("[AFTER] ErrorHandler invoked")
 
 		if len(ginContext.Errors) == 0 {
 			return
 		}
 
-		err := ginContext.Errors.Last().Err
+		rootError := ginContext.Errors.Last().Err
+
+		var validationErrors validator.ValidationErrors
+		if errors.As(rootError, &validationErrors) {
+			return
+		}
 
 		var subError exception.SubError
-		switch rootError := err.(type) {
+		var response dto.HttpResponse[any]
+		var httpStatus int
+
+		switch rootError.(type) {
 		case exception.SubError:
-			subError = rootError
+			// Map code prefix -> HTTP httpStatus
+			errors.As(rootError, &subError)
+			httpStatus = mapErrorCodeToStatus(subError.Code)
+			response = dto.HttpResponse[any]{
+				HttpStatus: httpStatus,
+				Code:       subError.Code,
+				Message:    core.Translator.T(util.GetLocale(ginContext), subError.MessageKey),
+			}
 
 		default:
-			core.Logger.Error("Unhandled error", zap.Error(err))
+			core.Logger.Error("Unhandled error", zap.Error(rootError))
 			ginContext.JSON(http.StatusInternalServerError, dto.HttpResponse[any]{
 				HttpStatus: http.StatusInternalServerError,
 				Code:       "internal/server-error",
@@ -36,9 +55,6 @@ func ErrorHandler() gin.HandlerFunc {
 			})
 			return
 		}
-
-		// Map code prefix -> HTTP httpStatus
-		httpStatus := mapErrorCodeToStatus(subError.Code)
 
 		// Get trace_id
 		traceID := util.GetTraceId(ginContext)
@@ -51,11 +67,8 @@ func ErrorHandler() gin.HandlerFunc {
 			zap.String("method", ginContext.Request.Method),
 		)
 
-		ginContext.JSON(httpStatus, dto.HttpResponse[any]{
-			HttpStatus: httpStatus,
-			Code:       subError.Code,
-			Message:    core.Translator.T(util.GetLocale(ginContext), subError.MessageKey),
-		})
+		ginContext.JSON(httpStatus, response)
+		ginContext.Abort()
 	}
 }
 

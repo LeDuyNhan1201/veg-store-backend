@@ -128,8 +128,14 @@ func (appError *AppError) buildErrorMap() {
 		appError.Invalid.Token.Code:        appError.Invalid.Token,
 		appError.Invalid.Email.Code:        appError.Invalid.Email,
 		appError.Invalid.Username.Code:     appError.Invalid.Username,
+		appError.Invalid.Fields.Code:       appError.Invalid.Fields,
 		appError.Auth.Unauthenticated.Code: appError.Auth.Unauthenticated,
 		appError.Auth.WrongPassword.Code:   appError.Auth.WrongPassword,
 		appError.Auth.Forbidden.Code:       appError.Auth.Forbidden,
+		appError.Validation.Email.Code:     appError.Validation.Email,
+		appError.Validation.Required.Code:  appError.Validation.Required,
+		appError.Validation.Size.Code:      appError.Validation.Size,
+		appError.Validation.Max.Code:       appError.Validation.Max,
+		appError.Validation.Min.Code:       appError.Validation.Min,
 	}
 }

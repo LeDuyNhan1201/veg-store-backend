@@ -32,6 +32,11 @@ func (handler *AuthHandler) SignIn(context *core.HttpContext) {
 	var err error
 
 	err = context.Gin.ShouldBindJSON(&request)
+	if err != nil {
+		context.Gin.Error(err)
+		return
+	}
+
 	tokens, err := handler.service.Tokens(request)
 	if err != nil {
 		context.Gin.Error(core.Error.Auth.Unauthenticated)

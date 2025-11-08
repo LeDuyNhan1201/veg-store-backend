@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"veg-store-backend/injection/core"
 	"veg-store-backend/util"
 
 	"github.com/gin-gonic/gin"
@@ -8,13 +9,16 @@ import (
 )
 
 func TraceID() gin.HandlerFunc {
-	return func(ginCtx *gin.Context) {
-		traceID := ginCtx.GetHeader("X-Request-ID")
+	return func(ginContext *gin.Context) {
+		traceID := ginContext.GetHeader("X-Request-ID")
 		if traceID == "" {
 			traceID = uuid.NewString()
 		}
-		ginCtx.Set(util.TraceIDContextKey, traceID)
-		ginCtx.Writer.Header().Set("X-Request-ID", traceID)
-		ginCtx.Next()
+		ginContext.Set(util.TraceIDContextKey, traceID)
+		ginContext.Writer.Header().Set("X-Request-ID", traceID)
+
+		core.Logger.Debug("[BEFORE] TraceID invoked")
+		ginContext.Next()
+		core.Logger.Debug("[AFTER] TraceID invoked")
 	}
 }

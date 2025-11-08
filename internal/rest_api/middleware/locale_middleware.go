@@ -3,6 +3,7 @@ package middleware
 import (
 	"fmt"
 	"strings"
+	"veg-store-backend/injection/core"
 	"veg-store-backend/util"
 
 	"github.com/gin-gonic/gin"
@@ -11,8 +12,8 @@ import (
 
 // Locale auto read "Accept-Language" header
 func Locale(defaultLocale string) gin.HandlerFunc {
-	return func(ginCtx *gin.Context) {
-		lang := ginCtx.GetHeader("Accept-Language")
+	return func(ginContext *gin.Context) {
+		lang := ginContext.GetHeader("Accept-Language")
 
 		zap.L().Info(fmt.Sprintf("Accept-Language: %s", lang))
 
@@ -27,7 +28,10 @@ func Locale(defaultLocale string) gin.HandlerFunc {
 		}
 
 		// Save locale to context
-		ginCtx.Set(util.LocaleContextKey, lang)
-		ginCtx.Next()
+		ginContext.Set(util.LocaleContextKey, lang)
+
+		core.Logger.Debug("[BEFORE] Locale invoked")
+		ginContext.Next()
+		core.Logger.Debug("[AFTER] Locale invoked")
 	}
 }

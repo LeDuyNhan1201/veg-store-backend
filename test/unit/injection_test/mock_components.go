@@ -21,7 +21,7 @@ func MockGlobalComponents() {
 
 func MockRouter() *router.Router {
 	mockRouter := router.NewRouter()
-	middleware.NewMiddleware(mockRouter, new(identity_test.MockJWTManager))
+	middleware.NewMiddlewareCollections(mockRouter, new(identity_test.MockJWTManager))
 	return mockRouter
 }
 
@@ -34,9 +34,6 @@ func MockUserRoutes(handler *rest_handler.UserHandler) *gin.Engine {
 		})
 		api.GET("/details/:id", func(ginCtx *gin.Context) {
 			handler.Details(mockHttpContext(ginCtx))
-		})
-		api.GET("/ping", func(ginCtx *gin.Context) {
-			handler.HealthCheck(mockHttpContext(ginCtx))
 		})
 		api.GET("/", func(ginCtx *gin.Context) {
 			handler.GetAllUsers(mockHttpContext(ginCtx))

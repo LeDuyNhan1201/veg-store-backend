@@ -64,6 +64,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/heath": {
+            "get": {
+                "description": "Check if the server is running",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Health Check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/user/details/{id}": {
             "get": {
                 "description": "Get details of a user by id",
@@ -133,13 +156,13 @@ const docTemplate = `{
                 "code": {
                     "type": "string"
                 },
+                "data": {},
                 "http_status": {
                     "type": "integer"
                 },
                 "message": {
                     "type": "string"
-                },
-                "repository": {}
+                }
             }
         },
         "dto.HttpResponse-dto_Tokens": {
@@ -148,14 +171,14 @@ const docTemplate = `{
                 "code": {
                     "type": "string"
                 },
+                "data": {
+                    "$ref": "#/definitions/dto.Tokens"
+                },
                 "http_status": {
                     "type": "integer"
                 },
                 "message": {
                     "type": "string"
-                },
-                "repository": {
-                    "$ref": "#/definitions/dto.Tokens"
                 }
             }
         },
@@ -165,14 +188,14 @@ const docTemplate = `{
                 "code": {
                     "type": "string"
                 },
+                "data": {
+                    "$ref": "#/definitions/model.User"
+                },
                 "http_status": {
                     "type": "integer"
                 },
                 "message": {
                     "type": "string"
-                },
-                "repository": {
-                    "$ref": "#/definitions/model.User"
                 }
             }
         },
@@ -182,13 +205,13 @@ const docTemplate = `{
                 "code": {
                     "type": "string"
                 },
+                "data": {
+                    "type": "string"
+                },
                 "http_status": {
                     "type": "integer"
                 },
                 "message": {
-                    "type": "string"
-                },
-                "repository": {
                     "type": "string"
                 }
             }

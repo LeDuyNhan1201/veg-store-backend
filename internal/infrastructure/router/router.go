@@ -7,9 +7,7 @@ import (
 	"time"
 	"veg-store-backend/docs"
 	"veg-store-backend/injection/core"
-	//"veg-store-backend/internal/rest_api/middleware"
 	"veg-store-backend/internal/rest_api/rest_handler"
-	//"veg-store-backend/util"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -23,11 +21,21 @@ type Router struct {
 	Engine  *gin.Engine
 }
 
+// @Summary Health Check
+// @Description Check if the server is running
+// @Tags health
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Router /heath [get]
 func NewRouter() *Router {
 	router := &Router{
 		ApiPath: core.Configs.Server.ApiPrefix + core.Configs.Server.ApiVersion,
 		Engine:  initGinEngine(),
 	}
+
+	router.Engine.GET(router.ApiPath+"/heath", func(ginContext *gin.Context) {
+		ginContext.JSON(http.StatusOK, gin.H{"message": "pong"})
+	})
 
 	if core.Configs.Mode != "prod" && core.Configs.Mode != "production" {
 		// Register Swagger UI in non-production modes

@@ -109,54 +109,66 @@ func (localizer *Localizer) Localize(lang, msgID string, params ...map[string]in
 }
 
 func loadI18nMessages(bundle *i18n.Bundle, absPath string) {
-	var fields []zap.Field
-
-	err := filepath.WalkDir(absPath, func(path string, d fs.DirEntry, err error) error {
+	err := filepath.WalkDir(absPath, func(path string, dirEntry fs.DirEntry, err error) error {
 		if err != nil {
 			Logger.Fatal("Error walking through 'i18n' directory", zap.Error(err))
 		}
-		if d.IsDir() || filepath.Ext(path) != ".toml" {
+
+		if dirEntry.IsDir() || filepath.Ext(path) != ".toml" {
 			return nil
 		}
 
-		base := filepath.Base(path)
-		parts := strings.Split(base, ".")
-		var locale string
-
-		// Determine locale from filename: e.g. active.vi.toml → locale = "vi"
-		if len(parts) >= 3 {
-			locale = parts[len(parts)-2]
-		} else {
-			Logger.Warn("Failed to load 'en' messages file", zap.String("file", path))
+		locale := extractLocaleFromFilename(path)
+		if locale == "" {
+			Logger.Warn("Failed to determine locale from file", zap.String("file", path))
+			return nil
 		}
 
-		// Try to load the message file into bundle
-		if mf, err := bundle.LoadMessageFile(path); err != nil {
+		messageFile, err := bundle.LoadMessageFile(path)
+		if err != nil {
 			Logger.Warn("Failed to load message file",
 				zap.String("file", path),
 				zap.Error(err),
 			)
-		} else {
-			Logger.Info("Loaded locale messages",
-				zap.String("locale", locale),
-				zap.String("file", path),
-				zap.Int("message_count", len(mf.Messages)),
-			)
-			for _, msg := range mf.Messages {
-				fields = append(fields, zap.String(fmt.Sprintf("%s.%s.one", locale, msg.ID), msg.One))
-				fields = append(fields, zap.String(fmt.Sprintf("%s.%s.other", locale, msg.ID), msg.Other))
-			}
+			return nil
+		}
+
+		if Configs.Mode != "prod" && Configs.Mode != "production" {
+			logLoadedLocaleMessages(locale, path, messageFile)
 		}
 
 		return nil
 	})
 
 	if err != nil {
-		Logger.Fatal("Error after walked through 'i18n' directory", zap.Error(err))
+		Logger.Fatal("Error after walking through 'i18n' directory", zap.Error(err))
+	}
+}
+
+func extractLocaleFromFilename(path string) string {
+	base := filepath.Base(path)       // e.g. "active.vi.toml"
+	parts := strings.Split(base, ".") // ["active", "vi", "toml"]
+
+	if len(parts) >= 3 {
+		return parts[len(parts)-2] // "vi"
+	}
+	return ""
+}
+
+func logLoadedLocaleMessages(locale, path string, messageFile *i18n.MessageFile) {
+	var fields []zap.Field
+
+	for _, message := range messageFile.Messages {
+		fields = append(fields,
+			zap.String(fmt.Sprintf("%s.%s.One", locale, message.ID), message.One),
+			zap.String(fmt.Sprintf("%s.%s.Other", locale, message.ID), message.Other),
+		)
 	}
 
-	Logger.Info("All i18n message files loaded",
-		zap.String("path", absPath),
-		zap.Any("loaded_messages", fields),
+	Logger.Info("Loaded locale messages",
+		zap.String("locale", locale),
+		zap.String("file", path),
+		zap.Int("message_count", len(messageFile.Messages)),
 	)
+	Logger.Debug("Message details", fields...) // log details only in debug mode
 }

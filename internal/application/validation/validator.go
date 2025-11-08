@@ -6,7 +6,6 @@ func InitValidationMessageKeys() map[string]string {
 	var validationMessages = map[string]string{
 		"email":    core.Error.Validation.Required.MessageKey,
 		"required": core.Error.Validation.Required.MessageKey,
-		"no_space": core.Error.Validation.Required.MessageKey,
 		"min":      core.Error.Validation.Min.MessageKey,
 		"max":      core.Error.Validation.Max.MessageKey,
 		"size":     core.Error.Validation.Size.MessageKey,
@@ -14,7 +13,7 @@ func InitValidationMessageKeys() map[string]string {
 	return validationMessages
 }
 
-func HandleParamForMessageKey(messageKey, param string) map[string]interface{} {
+func HandleParamForMessageKey(messageKey, field, param string) map[string]interface{} {
 	params := make(map[string]interface{})
 	switch messageKey {
 	case core.Error.Validation.Min.MessageKey:
@@ -25,5 +24,6 @@ func HandleParamForMessageKey(messageKey, param string) map[string]interface{} {
 		params["Min"] = param
 		params["Max"] = param
 	}
+	params["Field"] = field
 	return params
 }

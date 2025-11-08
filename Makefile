@@ -5,7 +5,7 @@ TEST_FLAGS=-v -cover -count=1
 PKG=./... # All sub packages in root
 PKG_INTERNAL=./internal/...
 PKG_TEST=./test/unit/...
-DEBUG_PORT=2346
+DEBUG_PORT=8081
 
 .PHONY: test test-coverage test-one lint tidy
 
@@ -81,7 +81,7 @@ run:
 debug:
 	@echo "Running in debug mode..."
 	@#docker exec -it -uroot veg-store-backend bash -c 'cd /app && dlv exec --listen=:2345 --headless=true --api-version=2 --accept-multiclient --continue ./bin/veg-store-backend'
-	@docker debug --output=/tmp/bin -it -uroot veg-store-backend bash -c 'cd /app && dlv debug --build-flags="-buildvcs=false" --listen=:$(DEBUG_PORT) --headless --api-version=2 --accept-multiclient --continue ./cmd/server'
+	@docker exec -it -uroot veg-store-backend bash -c 'cd /app && dlv debug --output=/tmp/bin --build-flags="-buildvcs=false" --listen=:$(DEBUG_PORT) --headless --api-version=2 --accept-multiclient --continue ./cmd/server'
 
 run-dev:
 	@echo "Running with Hot reload..."
@@ -92,7 +92,7 @@ swagger:
 	@if ! command -v swag >/dev/null 2>&1; then \
 		echo "'swag' not found. Please run 'make prepare' first"; \
     fi
-	@swag init -g main.go --parseDependency --parseInternal --dir ./cmd/server,./internal/application/dto,./internal/rest_api/rest_handler -o docs
+	@swag init -g main.go --parseDependency --parseInternal --dir ./cmd/server,./internal/application/dto,./internal/rest_api/rest_handler,./internal/infrastructure/router -o docs
 
 force-download:
 	@echo "Cleaning Go module cache..."

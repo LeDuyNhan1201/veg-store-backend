@@ -6,9 +6,43 @@
 # one = "Message for singular"
 # other = "Message for plural"
 # description = "Message description"
-[hello]
+[Hello]
 one = "Hello {{.Name}}"
 other = "Hello everyone"
+
+# ===========================================
+# Field Names
+# ===========================================
+
+[Field.Email]
+other = "Email"
+
+[Field.Username]
+other = "Username"
+
+[Field.Password]
+other = "Password"
+
+[Field.ConfirmPassword]
+other = "Confirm Password"
+
+[Field.OldPassword]
+other = "Old Password"
+
+[Field.NewPassword]
+other = "New Password"
+
+[Field.FirstName]
+other = "First Name"
+
+[Field.LastName]
+other = "Last Name"
+
+[Field.FullName]
+other = "Full Name"
+
+[Field.Phone]
+other = "Phone"
 
 # ===========================================
 # Not Found Errors
@@ -80,4 +114,4 @@ other = "{{.Field}} cannot exceed {{.Max}} characters for one or more entries"
 
 [Validation.Min]
 one = "{{.Field}} must be at least {{.Min}} characters"
-other = "{{.Field}} must be at least {{.Min}} characters for one or more
+other = "{{.Field}} must be at least {{.Min}} characters for one or more"

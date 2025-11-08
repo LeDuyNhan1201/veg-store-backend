@@ -85,15 +85,19 @@ func UseGinRequestLogging(engine *gin.Engine) {
 }
 
 func newPrettyLogger() *zap.Logger {
-	encoderCfg := zap.NewProductionEncoderConfig()
-	encoderCfg.TimeKey = "time"
-	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
-	encoderCfg.EncodeLevel = zapcore.CapitalLevelEncoder
+	encoderConfig := zap.NewProductionEncoderConfig()
+	encoderConfig.TimeKey = "time"
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 
-	jsonEncoder := zapcore.NewJSONEncoder(encoderCfg)
+	jsonEncoder := zapcore.NewJSONEncoder(encoderConfig)
 	prettyEncoder := &PrettyJSONEncoder{jsonEncoder}
 
-	core := zapcore.NewCore(prettyEncoder, zapcore.AddSync(os.Stdout), zap.InfoLevel)
+	logLevel := zap.DebugLevel
+	if Configs.Mode == "prod" || Configs.Mode == "production" {
+		logLevel = zap.InfoLevel
+	}
+	core := zapcore.NewCore(prettyEncoder, zapcore.AddSync(os.Stdout), logLevel)
 	return zap.New(core, zap.AddCaller())
 }
 

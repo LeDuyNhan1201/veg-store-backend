@@ -3,13 +3,26 @@ server:
   api_prefix: /api/
   api_version: v1
 
+security:
+  enable_https: false
+  https_port: 8180
+  keystore: ${KEYSTORE_PATH:keystore.p12}
+  keystore_password: ${KEYSTORE_PASSWORD:changeit}
+  truststore: ${TRUSTSTORE_PATH:truststore.p12}
+  truststore_password: ${TRUSTSTORE_PASSWORD:changeit}
+  public_endpoints:
+    - /auth/sign-in
+    - /auth/sign-up
+    - /auth/refresh
+    - /swagger-ui/*any
+
 jwt:
   expected_issuer: "https://veg-store.com"
   expected_audiences: [ "web", "mobile" ]
   access_duration: 15m
   refresh_duration: 7d
-  private_key_path: ${PRIVATE_KEY_PATH:private.pem}
-  public_key_path: ${PUBLIC_KEY_PATH:public.pem}
+  private_key: ${PRIVATE_KEY:private.pem}
+  public_key: ${PUBLIC_KEY:public.pem}
 
 cors:
   allow_origins: [ "*" ]

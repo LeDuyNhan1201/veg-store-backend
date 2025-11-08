@@ -30,7 +30,7 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 func (handler *UserHandler) Hello(context *core.HttpContext) {
 	context.JSON(http.StatusOK, gin.H{
 		"message": context.T(handler.service.Greeting(), map[string]interface{}{
-			"name":  "Ben",
+			"Name":  "Ben",
 			"Count": 1,
 		}),
 	})
@@ -57,10 +57,6 @@ func (handler *UserHandler) Details(context *core.HttpContext) {
 			Data:       user,
 		})
 	}
-}
-
-func (handler *UserHandler) HealthCheck(ctx *core.HttpContext) {
-	ctx.JSON(http.StatusOK, gin.H{"message": "pong"})
 }
 
 func (handler *UserHandler) GetAllUsers(ctx *core.HttpContext) {

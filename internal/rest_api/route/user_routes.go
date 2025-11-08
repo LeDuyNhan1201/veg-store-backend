@@ -30,9 +30,6 @@ func (routes *UserRoutes) Setup() {
 		api.GET("/details/:id", func(ginContext *gin.Context) {
 			routes.Handler.Details(core.GetHttpContext(ginContext))
 		})
-		api.GET("/ping", func(ginContext *gin.Context) {
-			routes.Handler.HealthCheck(core.GetHttpContext(ginContext))
-		})
 		api.GET("/", func(ginContext *gin.Context) {
 			routes.Handler.GetAllUsers(core.GetHttpContext(ginContext))
 		})

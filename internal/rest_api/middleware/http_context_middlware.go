@@ -20,6 +20,9 @@ func HttpContext() gin.HandlerFunc {
 		}
 
 		ginContext.Set(util.AppContextKey, httpContext)
+
+		core.Logger.Debug("[BEFORE] HttpContext invoked")
 		ginContext.Next()
+		core.Logger.Debug("[AFTER] HttpContext invoked")
 	}
 }

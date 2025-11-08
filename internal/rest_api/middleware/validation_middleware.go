@@ -12,17 +12,24 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func ValidationErrorMiddleware() gin.HandlerFunc {
+func Validation() gin.HandlerFunc {
 	return func(ginContext *gin.Context) {
+		core.Logger.Debug("[BEFORE] Validation invoked")
 		ginContext.Next()
+		core.Logger.Debug("[AFTER] Validation invoked")
 
 		err := ginContext.Errors.Last()
 		if err == nil {
 			return
 		}
 
-		httpContext := core.GetHttpContext(ginContext)
+		// Only handle validation errors
 		var validationErrors validator.ValidationErrors
+		if !errors.As(err.Err, &validationErrors) {
+			return
+		}
+
+		httpContext := core.GetHttpContext(ginContext)
 		var validationErrorDTO []dto.ValidationError
 		if errors.As(err.Err, &validationErrors) {
 			validationErrorDTO = make([]dto.ValidationError, 0)
@@ -53,6 +60,6 @@ func handleField(locale, field string) string {
 }
 
 func handleFieldError(locale, field, errorKey string, params string) string {
-	messageKey := core.ValidationMessageKeys[field]
-	return core.Translator.T(locale, messageKey, validation.HandleParamForMessageKey(messageKey, params))
+	messageKey := core.ValidationMessageKeys[errorKey]
+	return core.Translator.T(locale, messageKey, validation.HandleParamForMessageKey(messageKey, field, params))
 }

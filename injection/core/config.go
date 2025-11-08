@@ -53,13 +53,20 @@ type Config struct {
 		ApiVersion string `mapstructure:"api_version"`
 	} `mapstructure:"server"`
 
+	Security struct {
+		EnableHTTPS     bool     `mapstructure:"enable_https"`
+		KeyStore        string   `mapstructure:"key_store"`
+		TrustStore      string   `mapstructure:"trust_store"`
+		PublicEndpoints []string `mapstructure:"public_endpoints"`
+	} `mapstructure:"security"`
+
 	JWT struct {
 		ExpectedIssuer    string   `mapstructure:"expected_issuer"`
 		ExpectedAudiences []string `mapstructure:"expected_audiences"`
 		AccessDuration    string   `mapstructure:"access_duration"`
 		RefreshDuration   string   `mapstructure:"refresh_duration"`
-		PrivateKeyPath    string   `mapstructure:"private_key_path"`
-		PublicKeyPath     string   `mapstructure:"public_key_path"`
+		PrivateKey        string   `mapstructure:"private_key"`
+		PublicKey         string   `mapstructure:"public_key"`
 	} `mapstructure:"jwt"`
 
 	Cors struct {

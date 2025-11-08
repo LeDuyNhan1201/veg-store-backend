@@ -27,7 +27,8 @@ func setupUserHandlerTest() *UserHandler {
 	}
 }
 
-func (testHandler *UserHandler) TestHello_success(test *testing.T) {
+// FunctionName_Condition1_Condition2_ExpectedResult
+func (testHandler *UserHandler) Hello_success(test *testing.T) {
 	// GIVEN
 	expectedGreeting := "Hello Ben"
 
@@ -41,7 +42,7 @@ func (testHandler *UserHandler) TestHello_success(test *testing.T) {
 	testHandler.MockService.AssertExpectations(test)
 }
 
-func (testHandler *UserHandler) TestDetails_withNotFoundID_fail(test *testing.T) {
+func (testHandler *UserHandler) Details_withNotFoundID_fail(test *testing.T) {
 	// GIVEN
 	notFoundIdSample := "123"
 	expectedError := core.Error.NotFound.User
@@ -52,7 +53,7 @@ func (testHandler *UserHandler) TestDetails_withNotFoundID_fail(test *testing.T)
 
 	// THEN
 	var response dto.HttpResponse[any]
-	testHandler.DecodeResponse(test, responseRecorder, &response)
+	testHandler.DecodeResponse(test, responseRecorder, &response) // map responseRecorder -> response struct
 
 	// ASSERT
 	assert.Equal(test, http.StatusNotFound, response.HttpStatus)
@@ -66,6 +67,6 @@ func TestUserHandler(test *testing.T) {
 	mockHandler := setupUserHandlerTest()
 
 	// RUN TESTS
-	test.Run("TestHello_success", mockHandler.TestHello_success)
-	test.Run("TestDetails_withNotFoundID_fail", mockHandler.TestDetails_withNotFoundID_fail)
+	test.Run("Hello_success", mockHandler.Hello_success)
+	test.Run("Details_withNotFoundID_fail", mockHandler.Details_withNotFoundID_fail)
 }
