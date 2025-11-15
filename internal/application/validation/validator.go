@@ -1,29 +1,16 @@
 package validation
 
-import "veg-store-backend/injection/core"
+import (
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
+	"go.uber.org/zap"
+)
 
-func InitValidationMessageKeys() map[string]string {
-	var validationMessages = map[string]string{
-		"email":    core.Error.Validation.Required.MessageKey,
-		"required": core.Error.Validation.Required.MessageKey,
-		"min":      core.Error.Validation.Min.MessageKey,
-		"max":      core.Error.Validation.Max.MessageKey,
-		"size":     core.Error.Validation.Size.MessageKey,
+func Init() {
+	if validate, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		err := validate.RegisterValidation("range", RangeValidator)
+		if err != nil {
+			zap.L().Fatal("validation validator register error", zap.Error(err))
+		}
 	}
-	return validationMessages
-}
-
-func HandleParamForMessageKey(messageKey, field, param string) map[string]interface{} {
-	params := make(map[string]interface{})
-	switch messageKey {
-	case core.Error.Validation.Min.MessageKey:
-		params["Min"] = param
-	case core.Error.Validation.Max.MessageKey:
-		params["Max"] = param
-	case core.Error.Validation.Size.MessageKey:
-		params["Min"] = param
-		params["Max"] = param
-	}
-	params["Field"] = field
-	return params
 }

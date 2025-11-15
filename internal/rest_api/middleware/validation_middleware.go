@@ -4,19 +4,34 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"veg-store-backend/injection/core"
+	"veg-store-backend/internal/application/context"
 	"veg-store-backend/internal/application/dto"
-	"veg-store-backend/internal/application/validation"
+	"veg-store-backend/internal/infrastructure/core"
+	"veg-store-backend/internal/infrastructure/router"
+	"veg-store-backend/util"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
 
-func Validation() gin.HandlerFunc {
+type ValidationMiddleware struct {
+	*Middleware
+}
+
+func NewValidationMiddleware(core *core.Core, router *router.HTTPRouter) *ValidationMiddleware {
+	return &ValidationMiddleware{
+		Middleware: &Middleware{
+			Core:   core,
+			Router: router,
+		},
+	}
+}
+
+func (middleware *ValidationMiddleware) handler() gin.HandlerFunc {
 	return func(ginContext *gin.Context) {
-		core.Logger.Debug("[BEFORE] Validation invoked")
+		middleware.Logger.Debug("[BEFORE] Validation invoked")
 		ginContext.Next()
-		core.Logger.Debug("[AFTER] Validation invoked")
+		middleware.Logger.Debug("[AFTER] Validation invoked")
 
 		err := ginContext.Errors.Last()
 		if err == nil {
@@ -29,37 +44,44 @@ func Validation() gin.HandlerFunc {
 			return
 		}
 
-		httpContext := core.GetHttpContext(ginContext)
+		httpContext := context.GetHttpContext(ginContext)
 		var validationErrorDTO []dto.ValidationError
 		if errors.As(err.Err, &validationErrors) {
 			validationErrorDTO = make([]dto.ValidationError, 0)
 			for _, fieldError := range validationErrors {
-				field := handleField(httpContext.Locale(), fieldError.Field())
+				field := middleware.handleField(httpContext.Locale(), fieldError.Field())
 				errorParam := fieldError.Param()
-				errorMessage := handleFieldError(httpContext.Locale(), field, fieldError.Tag(), errorParam)
+				errorMessage := middleware.handleFieldError(httpContext.Locale(), field, fieldError.Tag(), errorParam)
 				validationErrorDTO = append(validationErrorDTO, dto.ValidationError{
 					Field: field,
 					Error: errorMessage,
 				})
 			}
 
-			ginContext.JSON(http.StatusBadRequest, dto.HttpResponse[[]dto.ValidationError]{
+			ginContext.AbortWithStatusJSON(http.StatusBadRequest, dto.HttpResponse[[]dto.ValidationError]{
 				HttpStatus: http.StatusBadRequest,
-				Code:       core.Error.Invalid.Fields.Code,
-				Message:    core.Translator.T(httpContext.Locale(), core.Error.Invalid.Fields.MessageKey),
+				Code:       middleware.Error.Invalid.Fields.Code,
+				Message:    middleware.Localizer.T(httpContext.Locale(), middleware.Error.Invalid.Fields.MessageKey),
 				Data:       validationErrorDTO,
 			})
-			ginContext.Abort()
 		}
 	}
 }
 
-func handleField(locale, field string) string {
-	messageKey := fmt.Sprintf("Field.%s", field)
-	return core.Translator.T(locale, messageKey)
+func (middleware *ValidationMiddleware) Setup() {
+	middleware.Router.Engine.Use(middleware.handler())
 }
 
-func handleFieldError(locale, field, errorKey string, params string) string {
-	messageKey := core.ValidationMessageKeys[errorKey]
-	return core.Translator.T(locale, messageKey, validation.HandleParamForMessageKey(messageKey, field, params))
+func (middleware *ValidationMiddleware) Priority() uint8 {
+	return util.ValidationMiddlewarePriority
+}
+
+func (middleware *ValidationMiddleware) handleField(locale, field string) string {
+	messageKey := fmt.Sprintf("Field.%s", field)
+	return middleware.Localizer.T(locale, messageKey)
+}
+
+func (middleware *ValidationMiddleware) handleFieldError(locale, field, errorKey string, params string) string {
+	messageKey := middleware.Error.ValidationMessages[errorKey]
+	return middleware.Localizer.T(locale, messageKey, middleware.Error.HandleParamForMessageKey(messageKey, field, params))
 }

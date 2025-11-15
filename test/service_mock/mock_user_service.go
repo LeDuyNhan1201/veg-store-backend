@@ -1,8 +1,6 @@
-package service_test
+package service_mock
 
 import (
-	"fmt"
-	"veg-store-backend/injection/core"
 	"veg-store-backend/internal/domain/model"
 
 	"github.com/stretchr/testify/mock"
@@ -39,16 +37,4 @@ func (mockService *MockUserService) FindById(id string) (*model.User, error) {
 func (mockService *MockUserService) Greeting() string {
 	args := mockService.Called()
 	return args.String(0)
-}
-
-/*----------------------------------INJECTION--------------------------------------*/
-
-func (mockService *MockUserService) Name() string { return "MockUserService" }
-func (mockService *MockUserService) Start() error {
-	core.Logger.Debug(fmt.Sprintf("%s initialized", mockService.Name()))
-	return nil
-}
-func (mockService *MockUserService) Stop() error {
-	core.Logger.Debug(fmt.Sprintf("%s destroyed", mockService.Name()))
-	return nil
 }

@@ -1,3 +1,4 @@
+export BACKEND_VERSION=1.0.0
 export JWT_ALG=RS256
 export CERT_SECRET=120103
 

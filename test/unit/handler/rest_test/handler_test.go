@@ -10,33 +10,34 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"veg-store-backend/injection/core"
+	"veg-store-backend/internal/infrastructure/core"
+	"veg-store-backend/test/unit/injection_test"
 
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
 type HandlerTest[THandler any, TService any] struct {
-	TestEngine   *gin.Engine
+	*core.Core
+	*injection_test.TestHTTPRouter
 	MockInstance THandler
 	MockService  TService
 }
 
 func NewHandlerTest[THandler any, TService any](
-	engine *gin.Engine,
 	handler THandler,
 	service TService,
 ) *HandlerTest[THandler, TService] {
 	return &HandlerTest[THandler, TService]{
-		TestEngine:   engine,
-		MockInstance: handler,
-		MockService:  service,
+		Core:           injection_test.MockCore(),
+		TestHTTPRouter: injection_test.InitTestHTTPRouter(),
+		MockInstance:   handler,
+		MockService:    service,
 	}
 }
 
-func AppURI(path string) string {
-	return core.Configs.Server.ApiPrefix + core.Configs.Server.ApiVersion + path
+func (handler *HandlerTest[THandler, TService]) AppURI(path string) string {
+	return handler.Config.Server.ApiPrefix + handler.Config.Server.ApiVersion + path
 }
 
 func (handler *HandlerTest[THandler, TService]) Get(t *testing.T, path string, headers ...map[string]string) *httptest.ResponseRecorder {
@@ -111,10 +112,10 @@ func (handler *HandlerTest[THandler, TService]) UploadFile(
 
 	// Handle HTTP response
 	responseRecorder := httptest.NewRecorder()
-	handler.TestEngine.ServeHTTP(responseRecorder, request)
+	handler.ServeHTTP(responseRecorder, request)
 
 	if responseRecorder.Code >= 400 {
-		zap.L().Info("HTTP Response Body Info",
+		handler.Logger.Info("HTTP Response Body Info",
 			zap.String("method", method),
 			zap.String("path", path),
 			zap.Any("code", responseRecorder.Code),
@@ -170,10 +171,10 @@ func (handler *HandlerTest[THandler, TService]) makeRequest(
 	}
 
 	responseRecorder := httptest.NewRecorder()
-	handler.TestEngine.ServeHTTP(responseRecorder, request)
+	handler.ServeHTTP(responseRecorder, request)
 
 	if responseRecorder.Code >= 400 {
-		zap.L().Info("HTTP Response Body Info",
+		handler.Logger.Info("HTTP Response Body Info",
 			zap.String("method", method),
 			zap.String("path", path),
 			zap.Any("code", responseRecorder.Code),

@@ -1,7 +1,13 @@
+app:
+  name: Veg Store Backend
+  version: ${APP_VERSION:1.0.0}
+  debug_enabled: false # set to true to see all DEBUG level logs
+
 server:
   port: 8080
   api_prefix: /api/
   api_version: v1
+  default_locale: en
 
 security:
   enable_https: false
@@ -11,7 +17,8 @@ security:
   truststore: ${TRUSTSTORE_PATH:truststore.p12}
   truststore_password: ${TRUSTSTORE_PASSWORD:changeit}
   public_endpoints:
-    - /auth/sign-in
+    - /user/hello
+    - /auth/
     - /auth/sign-up
     - /auth/refresh
     - /swagger-ui/*any
@@ -34,8 +41,15 @@ swagger:
   host: ${SWAGGER_HOST:localhost:8080}
 
 database:
-  host: postgres
-  port: 5432
-  user: ${POSTGRES_USER:dummy}
-  password: ${POSTGRES_PASSWORD:dummy}
-  name: crud-sample
+  postgres:
+    host: postgres
+    port: 5432
+    user: ${POSTGRES_USER:dummy}
+    password: ${POSTGRES_PASSWORD:dummy}
+    db_name: veg-store
+    ssl:
+      mode: disable
+      root_cert: ""
+      cert: ""
+      key: ""
+

@@ -76,7 +76,7 @@ other = "Vui lòng cung cấp địa chỉ email hợp lệ"
 one = "{{.Field}} không được để trống"
 other = "{{.Field}} không được để trống"
 
-[Validation.Size]
+[Validation.Range]
 one = "{{.Field}} phải có từ {{.Min}} đến {{.Max}} ký tự"
 other = "{{.Field}} phải có từ {{.Min}} đến {{.Max}} ký tự"
 

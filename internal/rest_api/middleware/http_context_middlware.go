@@ -1,28 +1,46 @@
 package middleware
 
 import (
-	"veg-store-backend/injection/core"
+	"veg-store-backend/internal/application/context"
+	"veg-store-backend/internal/infrastructure/core"
+	"veg-store-backend/internal/infrastructure/router"
 	"veg-store-backend/util"
 
 	"github.com/gin-gonic/gin"
 )
 
-/*
-This middleware injects the application context into each Gin request context.
-It provides access to shared resources like configuration, logger, and localizer.
-*/
+type HTTPMiddleware struct {
+	*Middleware
+}
 
-func HttpContext() gin.HandlerFunc {
+func NewHTTPMiddleware(core *core.Core, router *router.HTTPRouter) *HTTPMiddleware {
+	return &HTTPMiddleware{
+		Middleware: &Middleware{
+			Core:   core,
+			Router: router,
+		},
+	}
+}
+
+func (middleware *HTTPMiddleware) handler() gin.HandlerFunc {
 	return func(ginContext *gin.Context) {
-		httpContext := &core.HttpContext{
-			Translator: core.Translator,
-			Gin:        ginContext,
+		httpContext := &context.Http{
+			Core: middleware.Core,
+			Gin:  ginContext,
 		}
 
 		ginContext.Set(util.AppContextKey, httpContext)
 
-		core.Logger.Debug("[BEFORE] HttpContext invoked")
+		middleware.Logger.Debug("[BEFORE] Http invoked")
 		ginContext.Next()
-		core.Logger.Debug("[AFTER] HttpContext invoked")
+		middleware.Logger.Debug("[AFTER] Http invoked")
 	}
+}
+
+func (middleware *HTTPMiddleware) Setup() {
+	middleware.Router.Engine.Use(middleware.handler())
+}
+
+func (middleware *HTTPMiddleware) Priority() uint8 {
+	return util.HTTPMiddlewarePriority
 }

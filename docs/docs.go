@@ -24,7 +24,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/sign-in": {
+        "/auth": {
             "post": {
                 "description": "Authenticate user and return a token",
                 "consumes": [
@@ -34,7 +34,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "Auth"
                 ],
                 "summary": "Sign in a user",
                 "parameters": [
@@ -64,24 +64,32 @@ const docTemplate = `{
                 }
             }
         },
-        "/heath": {
+        "/auth/me": {
             "get": {
-                "description": "Check if the server is running",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get name of a current user",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "health"
+                    "Auth"
                 ],
-                "summary": "Health Check",
+                "summary": "Me",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.HttpResponse-string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-any"
                         }
                     }
                 }
@@ -89,6 +97,11 @@ const docTemplate = `{
         },
         "/user/details/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get details of a user by id",
                 "consumes": [
                     "application/json"
@@ -97,7 +110,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "Users"
                 ],
                 "summary": "User details",
                 "parameters": [
@@ -135,7 +148,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "Users"
                 ],
                 "summary": "Anh trai say hi",
                 "responses": {
@@ -250,14 +263,31 @@ const docTemplate = `{
                 "age": {
                     "type": "integer"
                 },
-                "id": {
+                "createdAt": {
+                    "description": "Auto-set on insert",
                     "type": "string"
+                },
+                "id": {
+                    "description": "Primary key",
+                    "type": "string"
+                },
+                "isDeleted": {
+                    "description": "Soft delete flag",
+                    "type": "boolean"
                 },
                 "name": {
                     "type": "string"
                 },
                 "sex": {
                     "type": "boolean"
+                },
+                "updatedAt": {
+                    "description": "Auto-set on update",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "Optimistic lock",
+                    "type": "integer"
                 }
             }
         }

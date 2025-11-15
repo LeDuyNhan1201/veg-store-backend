@@ -9,7 +9,7 @@ generate_root_ca() {
   local ca_key="$ca_dir/ca.key"
   local ca_cert="$ca_dir/ca.crt"
 
-  # === 📂 Prepare ca folder ===
+  # === Prepare ca folder ===
   if [[ -d "$ca_dir" ]]; then
     rm -rf "$ca_dir"/*
   else
@@ -42,7 +42,7 @@ generate_root_ca() {
 # generate_root_ca "LDNhanCA"
 # generate_root_ca "ExampleCA" 730
 
-generate_keystore_and_truststore() {
+generate_cert_with_keystore_and_truststore() {
   local cert_dir="$CERTS_DIR/$1"  # absolute or relative path
   local main_domain="$2"          # e.g. example.com
 
@@ -68,6 +68,11 @@ generate_keystore_and_truststore() {
     -pkeyopt ec_paramgen_curve:secp521r1 \
     -out "$cert_dir/key.pem"
 
+  openssl genpkey \
+    -algorithm EC \
+    -pkeyopt ec_paramgen_curve:secp521r1 \
+    -out "$cert_dir/server.key"
+
   # === Create OpenSSL config ===
   echo "Creating OpenSSL config with SANs..."
   local san_text=""
@@ -86,7 +91,7 @@ generate_keystore_and_truststore() {
     done
   fi
 
-  cat > "$cert_dir/$alias_name.openssl.cnf" <<EOF
+  cat > "$cert_dir/$alias_name.openssl.cnf" << EOF
 [ req ]
 prompt             = no
 default_md         = sha512
@@ -115,12 +120,23 @@ EOF
     -out "$cert_dir/csr.pem" \
     -config "$cert_dir/$alias_name.openssl.cnf"
 
+  openssl req -new \
+    -key "$cert_dir/server.key" \
+    -out "$cert_dir/server.csr" \
+    -config "$cert_dir/$alias_name.openssl.cnf"
+
   # === Sign cert with CA ===
   echo "Signing certificate with CA..."
   openssl x509 -req \
     -in "$cert_dir/csr.pem" \
     -CA "$ca_cert" -CAkey "$ca_key" -CAcreateserial \
     -out "$cert_dir/cert.pem" -days 365 -sha512 \
+    -extfile "$cert_dir/$alias_name.openssl.cnf" -extensions req_ext
+
+  openssl x509 -req \
+    -in "$cert_dir/server.csr" \
+    -CA "$ca_cert" -CAkey "$ca_key" -CAcreateserial \
+    -out "$cert_dir/server.crt" -days 365 -sha512 \
     -extfile "$cert_dir/$alias_name.openssl.cnf" -extensions req_ext
 
   # === Create PKCS#12 keystore ===
@@ -145,13 +161,11 @@ EOF
     -storepass "$cert_secret"
 
   # === Permissions ===
-  chmod 644 "$cert_dir"/*.pem "$cert_dir"/*.p12
+  chmod 644 "$cert_dir"/*.pem "$cert_dir"/*.p12 "$cert_dir"/*.csr "$cert_dir"/*.crt
 
-  echo "[$main_domain] Keystore and truststore generation complete!"
+  echo "[$main_domain] All certs, Keystore and truststore generation complete!"
 }
 
 # ===== Example usage =====
 # export CERT_SECRET="yourpass"
 # generate_keystore_and_truststore "/path/to/certs" "example.com" "rest_api.example.com" "admin.example.com"
-
-

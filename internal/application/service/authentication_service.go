@@ -1,30 +1,25 @@
 package service
 
 import (
-	"context"
-	"fmt"
-	"veg-store-backend/injection/core"
 	"veg-store-backend/internal/application/dto"
 	"veg-store-backend/internal/application/infra_interface"
-
-	"go.uber.org/fx"
+	"veg-store-backend/internal/infrastructure/core"
 )
 
 type AuthenticationService interface {
-	Name() string
-	Start() error
-	Stop() error
-
 	Tokens(request dto.SignInRequest) (*dto.Tokens, error)
+	Me(id string) (string, error)
 }
 
 type authenticationService struct {
+	*core.Core
 	userService UserService
 	jwtManager  infra_interface.JWTManager
 }
 
-func NewAuthenticationService(userService UserService, jwtManager infra_interface.JWTManager) AuthenticationService {
+func NewAuthenticationService(core *core.Core, userService UserService, jwtManager infra_interface.JWTManager) AuthenticationService {
 	return &authenticationService{
+		Core:        core,
 		userService: userService,
 		jwtManager:  jwtManager,
 	}
@@ -34,16 +29,16 @@ func (service *authenticationService) Tokens(request dto.SignInRequest) (*dto.To
 	var err error
 	user, err := service.userService.FindByUsername(request.Username)
 	if err != nil {
-		return nil, core.Error.Invalid.Username
+		return nil, service.Error.Invalid.Username
 	}
 
-	accessToken, err := service.jwtManager.Sign(false, user.ID)
+	accessToken, err := service.jwtManager.Sign(false, user.Id)
 	if err != nil {
-		return nil, core.Error.Auth.Unauthenticated
+		return nil, service.Error.Auth.Unauthenticated
 	}
-	refreshToken, err := service.jwtManager.Sign(true, user.ID)
+	refreshToken, err := service.jwtManager.Sign(true, user.Id)
 	if err != nil {
-		return nil, core.Error.Auth.Unauthenticated
+		return nil, service.Error.Auth.Unauthenticated
 	}
 
 	return &dto.Tokens{
@@ -52,27 +47,10 @@ func (service *authenticationService) Tokens(request dto.SignInRequest) (*dto.To
 	}, nil
 }
 
-/*----------------------------------INJECTION--------------------------------------*/
-
-func (service *authenticationService) Name() string { return "UserRepository" }
-func (service *authenticationService) Start() error {
-	core.Logger.Debug(fmt.Sprintf("%s initialized", service.Name()))
-	return nil
+func (service *authenticationService) Me(id string) (string, error) {
+	user, err := service.userService.FindById(id)
+	if err != nil {
+		return "", err
+	}
+	return user.Name, nil
 }
-func (service *authenticationService) Stop() error {
-	core.Logger.Debug(fmt.Sprintf("%s initialized", service.Name()))
-	return nil
-}
-
-func RegisterAuthenticationService(lifecycle fx.Lifecycle, service AuthenticationService) {
-	lifecycle.Append(fx.Hook{
-		OnStart: func(context context.Context) error {
-			return service.Start()
-		},
-		OnStop: func(context context.Context) error {
-			return service.Stop()
-		},
-	})
-}
-
-var AuthenticationServiceModule = fx.Options(fx.Provide(NewAuthenticationService), fx.Invoke(RegisterAuthenticationService))

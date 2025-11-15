@@ -28,13 +28,15 @@ create_env_file
 
 # Generate certificates for HTTPS
 generate_root_ca
-generate_keystore_and_truststore "veg-store-backend" "veg-store-backend"
+generate_cert_with_keystore_and_truststore "veg-store-backend" "veg-store-backend"
+generate_cert_with_keystore_and_truststore "postgres" "postgres"
 
 # Generate asymmetric key for JWT
 generate_keypair
 
-# Create builder image on Docker local
-docker build -f docker/Dockerfile.builder -t benlun1201/veg-store-backend-builder .
+# Create custom images on Docker local
+docker build -f docker/veg-store-backend/Dockerfile.builder -t veg-store/backend-builder:"${BACKEND_VERSION}" .
+docker build -f docker/postgres/Dockerfile -t veg-store/postgres-full-ssl .
 
 # Compose up all services with ${mode}
 docker compose -f docker/docker-compose."${mode}".yml up --force-recreate -d

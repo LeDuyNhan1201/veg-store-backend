@@ -1,8 +1,8 @@
-# 🚀 How to Start the Application
+# How to Start the Application
 
-> ⚠️ **Notice:** Run all the following commands **from the project root directory**.
+> **Notice:** Run all the following commands **from the project root directory**.
 
-## 1. 🧩 Prerequisites
+## 1. Prerequisites
 Ensure the following packages are installed:
 - **Go** ≥ 1.25.3
 - **Docker** (Builder, Engine)
@@ -11,16 +11,18 @@ Ensure the following packages are installed:
 
 ---
 
-## 2. ▶️ Initial Setup
+## 2. Initial Setup
 ```bash
-make prepare # Only run for the first time
-make start
+make prepare # Only run for the first time & should be run by WSL if using VScode (Window)
+
+make start-linux # Use when using linux
+make start-windows # Use when using VSCode (Windows)
 ```
-> ⚠️ The first run may take a while — please wait until setup completes.
+> The first run may take a while — please wait until setup completes.
 
 ---
 
-## 3. 🐳 Run Application in Docker
+## 3. Run Application in Docker
 
 ### Run normally (no hot reload)
 ```bash
@@ -31,17 +33,17 @@ make run
 ```bash
 make run-dev
 ```
-> 💡 If hot reload doesn’t trigger after code changes, stop it using <kbd>Ctrl</kbd> + <kbd>C</kbd> and rerun the command.
+> If hot reload doesn’t trigger after code changes, stop it using <kbd>Ctrl</kbd> + <kbd>C</kbd> and rerun the command.
 
 ---
 
-## 4. ✅ Verify the Application
+## 4. Verify the Application
 Visit:  
 👉 [http://localhost:2345/api/v1/swagger-ui/index.html#](http://localhost:2345/api/v1/swagger-ui/index.html#)
 
 ---
 
-## 5. 🛑 Stop Application
+## 5. Stop Application
 To stop the containers, run:
 ```bash
 make stop
@@ -49,7 +51,7 @@ make stop
 
 ---
 
-# ⚙️ Update Environment Variables
+# Update Environment Variables
 
 1. Update `scripts/helper/env_config.sh`
 2. Update `create_env_file()` in `scripts/helper/functions.sh`
@@ -59,29 +61,29 @@ After changes, restart the environment:
 ```bash
 make restart
 ```
-> 🧠 If you only changed `.env` values, updating (3) and restarting is enough.
+> If you only changed `.env` values, updating (3) and restarting is enough.
 
 ---
 
-# 📘 Update Swagger Schemas
+# Update Swagger Schemas
 To regenerate Swagger documentation:
 ```bash
 make swagger
 ```
-> 🔄 Re-run the app if hot reload is not enabled.
+> Re-run the app if hot reload is not enabled.
 
 ---
 
-# 🧪 Testing Guide
+# Testing Guide
 
-## ▶️ Run All Unit Tests with Coverage
+## Run All Unit Tests with Coverage
 To execute all unit tests and generate a detailed coverage report:
 ```bash
 make coverage
 ```
-> 📄 After running, open ./test/report/index.html in your browser to view the full coverage report.
+> After running, open ./test/report/index.html in your browser to view the full coverage report.
 
-## 🎯 Run Tests in a Specific Package:
+## Run Tests in a Specific Package:
 Use the PKG argument to target a specific package:
 ```bash
 # make test PKG=./test/unit/<package-you-want>
@@ -89,10 +91,14 @@ Use the PKG argument to target a specific package:
 make test PKG=./test/unit/rest_handler/rest_test
 ```
 
-## 🧩 Run a Single Test Function:
+## Run a Single Test Function:
 Use the TEST argument to execute one specific test:
 ```bash
 # make test-one TEST=<TestSuiteName>/<TestName>
 # Example:
 make test-one TEST=TestUserHandler/TestHello_success
 ```
+
+# Dependencies:
+https://gin-gonic.com/en/docs/
+https://pkg.go.dev/github.com/golang-jwt/jwt/v5

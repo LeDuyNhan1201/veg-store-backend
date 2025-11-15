@@ -1,8 +1,6 @@
-package identity_test
+package identity_mock
 
 import (
-	"fmt"
-	"veg-store-backend/injection/core"
 	"veg-store-backend/internal/application/infra_interface"
 
 	"github.com/stretchr/testify/mock"
@@ -21,16 +19,4 @@ func (mockManager *MockJWTManager) Verify(rawToken string) (*infra_interface.JWT
 	args := mockManager.Called(rawToken)
 	claims, _ := args.Get(0).(*infra_interface.JWTClaims)
 	return claims, args.Error(1)
-}
-
-/*----------------------------------INJECTION--------------------------------------*/
-
-func (mockManager *MockJWTManager) Name() string { return "MockJWTManager" }
-func (mockManager *MockJWTManager) Start() error {
-	core.Logger.Debug(fmt.Sprintf("%s initialized", mockManager.Name()))
-	return nil
-}
-func (mockManager *MockJWTManager) Stop() error {
-	core.Logger.Debug(fmt.Sprintf("%s destroyed", mockManager.Name()))
-	return nil
 }

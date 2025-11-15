@@ -66,12 +66,25 @@ definitions:
     properties:
       age:
         type: integer
-      id:
+      createdAt:
+        description: Auto-set on insert
         type: string
+      id:
+        description: Primary key
+        type: string
+      isDeleted:
+        description: Soft delete flag
+        type: boolean
       name:
         type: string
       sex:
         type: boolean
+      updatedAt:
+        description: Auto-set on update
+        type: string
+      version:
+        description: Optimistic lock
+        type: integer
     type: object
 host: localhost:8080
 info:
@@ -87,7 +100,7 @@ info:
   title: RESTFUL API VERSION 1.0
   version: "1.0"
 paths:
-  /auth/sign-in:
+  /auth:
     post:
       consumes:
       - application/json
@@ -112,22 +125,26 @@ paths:
             $ref: '#/definitions/dto.HttpResponse-string'
       summary: Sign in a user
       tags:
-      - auth
-  /heath:
+      - Auth
+  /auth/me:
     get:
-      description: Check if the server is running
+      description: Get name of a current user
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Health Check
+            $ref: '#/definitions/dto.HttpResponse-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-any'
+      security:
+      - BearerAuth: []
+      summary: Me
       tags:
-      - health
+      - Auth
   /user/details/{id}:
     get:
       consumes:
@@ -150,9 +167,11 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/dto.HttpResponse-any'
+      security:
+      - BearerAuth: []
       summary: User details
       tags:
-      - users
+      - Users
   /user/hello:
     get:
       consumes:
@@ -167,7 +186,7 @@ paths:
             $ref: '#/definitions/dto.HttpResponse-string'
       summary: Anh trai say hi
       tags:
-      - users
+      - Users
 schemes:
 - http
 - https

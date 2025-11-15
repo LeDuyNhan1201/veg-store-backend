@@ -1,47 +1,18 @@
 package repository
 
 import (
-	"context"
-	"fmt"
-	"veg-store-backend/injection/core"
-
-	"go.uber.org/fx"
+	"veg-store-backend/internal/application/infra_interface"
+	"veg-store-backend/internal/domain/model"
+	"veg-store-backend/internal/infrastructure/core"
+	"veg-store-backend/internal/infrastructure/data"
 )
 
-type UserRepository interface {
-	Name() string
-	Start() error
-	Stop() error
-}
-
 type userRepository struct {
+	*Repository[*model.User, string]
 }
 
-func NewUserRepository() UserRepository {
-	return &userRepository{}
+func NewUserRepository(core *core.Core, postgres *data.PostgresDB) infra_interface.UserRepository {
+	return &userRepository{
+		Repository: NewRepository[*model.User, string](core, postgres),
+	}
 }
-
-/*----------------------------------INJECTION--------------------------------------*/
-
-func (repository *userRepository) Name() string { return "UserRepository" }
-func (repository *userRepository) Start() error {
-	core.Logger.Debug(fmt.Sprintf("%s initialized", repository.Name()))
-	return nil
-}
-func (repository *userRepository) Stop() error {
-	core.Logger.Debug(fmt.Sprintf("%s destroyed", repository.Name()))
-	return nil
-}
-
-func RegisterUserRepository(lifecycle fx.Lifecycle, repository UserRepository) {
-	lifecycle.Append(fx.Hook{
-		OnStart: func(context context.Context) error {
-			return repository.Start()
-		},
-		OnStop: func(context context.Context) error {
-			return repository.Stop()
-		},
-	})
-}
-
-var UserRepositoryModule = fx.Options(fx.Provide(NewUserRepository), fx.Invoke(RegisterUserRepository))

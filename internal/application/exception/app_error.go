@@ -1,5 +1,9 @@
 package exception
 
+import (
+	"veg-store-backend/internal/application/validation"
+)
+
 type SubError struct {
 	Code       string
 	MessageKey string
@@ -30,7 +34,7 @@ type AuthError struct {
 type ValidationError struct {
 	Email    SubError
 	Required SubError
-	Size     SubError
+	Range    SubError
 	Max      SubError
 	Min      SubError
 }
@@ -41,6 +45,8 @@ type AppError struct {
 	Invalid    InvalidError
 	Validation ValidationError
 
+	ValidationMessages map[string]string
+
 	errorMap map[string]SubError
 }
 
@@ -49,7 +55,7 @@ func (appError *AppError) FindByCode(code string) (SubError, bool) {
 	return err, ok
 }
 
-func InitAppError() *AppError {
+func Init() *AppError {
 	appError := &AppError{
 		NotFound: NotFoundError{
 			User: SubError{
@@ -102,9 +108,9 @@ func InitAppError() *AppError {
 				Code:       "validation/required",
 				MessageKey: "Validation.Required",
 			},
-			Size: SubError{
+			Range: SubError{
 				Code:       "validation/forbidden",
-				MessageKey: "Validation.Size",
+				MessageKey: "Validation.Range",
 			},
 			Max: SubError{
 				Code:       "validation/forbidden",
@@ -116,9 +122,36 @@ func InitAppError() *AppError {
 			},
 		},
 	}
-
+	appError.initValidationMessageKeys()
 	appError.buildErrorMap()
 	return appError
+}
+
+func (appError *AppError) initValidationMessageKeys() {
+	var validationMessages = map[string]string{
+		"email":    appError.Validation.Required.MessageKey,
+		"required": appError.Validation.Required.MessageKey,
+		"min":      appError.Validation.Min.MessageKey,
+		"max":      appError.Validation.Max.MessageKey,
+		"range":    appError.Validation.Range.MessageKey,
+	}
+	appError.ValidationMessages = validationMessages
+}
+
+func (appError *AppError) HandleParamForMessageKey(messageKey, field, param string) map[string]interface{} {
+	params := make(map[string]interface{})
+	switch messageKey {
+	case appError.Validation.Min.MessageKey:
+		params["Min"] = param
+	case appError.Validation.Max.MessageKey:
+		params["Max"] = param
+	case appError.Validation.Range.MessageKey:
+		minParam, maxParam := validation.ParseRangeParam(param)
+		params["Min"] = minParam
+		params["Max"] = maxParam
+	}
+	params["Field"] = field
+	return params
 }
 
 func (appError *AppError) buildErrorMap() {
@@ -134,7 +167,7 @@ func (appError *AppError) buildErrorMap() {
 		appError.Auth.Forbidden.Code:       appError.Auth.Forbidden,
 		appError.Validation.Email.Code:     appError.Validation.Email,
 		appError.Validation.Required.Code:  appError.Validation.Required,
-		appError.Validation.Size.Code:      appError.Validation.Size,
+		appError.Validation.Range.Code:     appError.Validation.Range,
 		appError.Validation.Max.Code:       appError.Validation.Max,
 		appError.Validation.Min.Code:       appError.Validation.Min,
 	}

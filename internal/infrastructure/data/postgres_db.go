@@ -1,0 +1,92 @@
+package data
+
+import (
+	"fmt"
+	"log"
+	"time"
+	"veg-store-backend/internal/domain/model"
+	"veg-store-backend/internal/infrastructure/core"
+	"veg-store-backend/util"
+
+	"go.uber.org/zap"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+)
+
+type PostgresDB struct {
+	*core.Core
+	DB *gorm.DB
+}
+
+func InitPostgresDB(core *core.Core) *PostgresDB {
+	// Build DSN
+	dsn := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		core.Config.Database.Postgres.Host,
+		core.Config.Database.Postgres.Port,
+		core.Config.Database.Postgres.User,
+		core.Config.Database.Postgres.Password,
+		core.Config.Database.Postgres.DBName,
+		core.Config.Database.Postgres.SSL.Mode,
+	)
+
+	// Add SSL cert paths if present
+	certsPath := util.GetConfigPathFromGoMod("secrets/certs")
+	if core.Config.Database.Postgres.SSL.RootCert != "" {
+		dsn += fmt.Sprintf(" sslrootcert=%s/%s", certsPath, core.Config.Database.Postgres.SSL.RootCert)
+	}
+	if core.Config.Database.Postgres.SSL.Cert != "" {
+		dsn += fmt.Sprintf(" sslcert=%s/%s", certsPath, core.Config.Database.Postgres.SSL.Cert)
+	}
+	if core.Config.Database.Postgres.SSL.Key != "" {
+		dsn += fmt.Sprintf(" sslkey=%s/%s", certsPath, core.Config.Database.Postgres.SSL.Key)
+	}
+
+	// Open GORM
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info), // optional: log SQL queries
+	})
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+
+	// Configure connection pool
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatalf("Failed to get sql.DB: %v", err)
+	}
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(time.Hour)
+
+	return &PostgresDB{
+		Core: core,
+		DB:   db,
+	}
+}
+
+func (pdb *PostgresDB) Migrate() error {
+	models := []interface{}{
+		&model.User{},
+		// Add other models here
+	}
+
+	switch pdb.Config.Database.Postgres.DDLMode {
+	case "create-drop":
+		pdb.Logger.Info("Dropping all tables...")
+		err := pdb.DB.Migrator().DropTable(models...)
+		if err != nil {
+			pdb.Logger.Fatal("Failed to drop tables: ", zap.Error(err))
+		}
+		return pdb.DB.AutoMigrate(models...)
+
+	case "update":
+		pdb.Logger.Info("Updating database schema...")
+		return pdb.DB.AutoMigrate(models...)
+
+	default:
+		pdb.Logger.Info("No DDL operations will be performed.")
+		return nil
+	}
+}
