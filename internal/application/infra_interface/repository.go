@@ -1,18 +1,27 @@
 package infra_interface
 
-import "veg-store-backend/internal/domain/model"
+import (
+	"context"
+	"veg-store-backend/internal/domain/model"
+)
 
-type IAuditing[TId comparable] interface {
-	model.IAuditingModel[TId]
+type IEntity[TId model.AllowedId] interface {
+	GetId() TId
+	Created() *model.AuditingModel[TId]
+	Updated() *model.AuditingModel[TId]
+	Deleted() *model.AuditingModel[TId]
 }
 
-type IRepository[TModel IAuditing[TId], TId comparable] interface {
-	FindById(id TId) (TModel, bool, error)
-	Save(entity TModel) (string, error)
-	Delete(id TId) (string, error)
-	FindAll() ([]TModel, error)
+type IRepository[TEntity IEntity[TId], TId model.AllowedId] interface {
+	Create(ctx context.Context, entity *TEntity) error
+	FindById(ctx context.Context, id TId) (TEntity, error)
+	FindAll(ctx context.Context) ([]TEntity, error)
+	Update(ctx context.Context, entity *TEntity) error
+	SoftDelete(ctx context.Context, id TId) error
+	HardDelete(ctx context.Context, id TId) error
 }
 
 type UserRepository interface {
-	IRepository[*model.User, string]
+	IRepository[*model.User, model.UUID]
+	Seed(num int8) error
 }

@@ -1,6 +1,7 @@
 package rest_test
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 	"veg-store-backend/internal/application/dto"
@@ -8,6 +9,7 @@ import (
 	"veg-store-backend/test/service_mock"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 type UserHandler struct {
@@ -41,13 +43,13 @@ func (testHandler *UserHandler) hello_success(test *testing.T) {
 
 func (testHandler *UserHandler) details_withNotFoundID_fail(test *testing.T) {
 	// GIVEN
-	notFoundIdSample := "123"
+	notFoundIdSample := "1b332625-8949-4e3b-a10e-b3291101a341"
 	expectedError := testHandler.Error.NotFound.User
 
 	// WHEN
 	testHandler.MockService.On("FindById", notFoundIdSample).Return(nil, expectedError)
-	responseRecorder := testHandler.Get(test, testHandler.AppURI("/user/details/123"))
-
+	responseRecorder := testHandler.Get(test, testHandler.AppURI(fmt.Sprintf("/user/%s", notFoundIdSample)))
+	testHandler.Logger.Debug("Response Body:", zap.Any("body", responseRecorder))
 	// THEN
 	var response dto.HttpResponse[any]
 	testHandler.DecodeResponse(test, responseRecorder, &response) // map responseRecorder -> response struct

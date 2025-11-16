@@ -1,11 +1,13 @@
 package util
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func GetConfigPathFromGoMod(folderName string) string {
@@ -42,6 +44,23 @@ func ParseDuration(s string) (time.Duration, error) {
 	}
 
 	return time.ParseDuration(s)
+}
+
+func HashPassword(password string) string {
+	// bcrypt.DefaultCost is 10, good balance between security and performance
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		panic("Failed to hash password: " + err.Error())
+	}
+	return string(bytes)
+}
+
+func CheckPassword(hashedPassword, plainPassword string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
+	if err != nil {
+		log.Println("Password mismatch:", err)
+	}
+	return err == nil
 }
 
 func findGoModuleRoot() string {

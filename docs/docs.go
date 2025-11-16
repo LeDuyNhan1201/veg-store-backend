@@ -95,7 +95,30 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/details/{id}": {
+        "/user/hello": {
+            "get": {
+                "description": "Anh trai say gex",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Anh trai say hi",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-string"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{id}": {
             "get": {
                 "security": [
                     {
@@ -133,29 +156,6 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/dto.HttpResponse-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/hello": {
-            "get": {
-                "description": "Anh trai say gex",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Anh trai say hi",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HttpResponse-string"
                         }
                     }
                 }
@@ -264,15 +264,12 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "createdAt": {
-                    "description": "Auto-set on insert",
                     "type": "string"
                 },
                 "id": {
-                    "description": "Primary key",
                     "type": "string"
                 },
                 "isDeleted": {
-                    "description": "Soft delete flag",
                     "type": "boolean"
                 },
                 "name": {
@@ -282,11 +279,9 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "updatedAt": {
-                    "description": "Auto-set on update",
                     "type": "string"
                 },
                 "version": {
-                    "description": "Optimistic lock",
                     "type": "integer"
                 }
             }

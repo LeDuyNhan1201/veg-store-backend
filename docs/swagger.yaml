@@ -67,23 +67,18 @@ definitions:
       age:
         type: integer
       createdAt:
-        description: Auto-set on insert
         type: string
       id:
-        description: Primary key
         type: string
       isDeleted:
-        description: Soft delete flag
         type: boolean
       name:
         type: string
       sex:
         type: boolean
       updatedAt:
-        description: Auto-set on update
         type: string
       version:
-        description: Optimistic lock
         type: integer
     type: object
 host: localhost:8080
@@ -145,7 +140,7 @@ paths:
       summary: Me
       tags:
       - Auth
-  /user/details/{id}:
+  /user/{id}:
     get:
       consumes:
       - application/json

@@ -23,24 +23,24 @@ func InitPostgresDB(core *core.Core) *PostgresDB {
 	// Build DSN
 	dsn := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-		core.Config.Database.Postgres.Host,
-		core.Config.Database.Postgres.Port,
-		core.Config.Database.Postgres.User,
-		core.Config.Database.Postgres.Password,
-		core.Config.Database.Postgres.DBName,
-		core.Config.Database.Postgres.SSL.Mode,
+		core.Config.Data.Postgres.Host,
+		core.Config.Data.Postgres.Port,
+		core.Config.Data.Postgres.User,
+		core.Config.Data.Postgres.Password,
+		core.Config.Data.Postgres.DBName,
+		core.Config.Data.Postgres.SSL.Mode,
 	)
 
 	// Add SSL cert paths if present
 	certsPath := util.GetConfigPathFromGoMod("secrets/certs")
-	if core.Config.Database.Postgres.SSL.RootCert != "" {
-		dsn += fmt.Sprintf(" sslrootcert=%s/%s", certsPath, core.Config.Database.Postgres.SSL.RootCert)
+	if core.Config.Data.Postgres.SSL.RootCert != "" {
+		dsn += fmt.Sprintf(" sslrootcert=%s/%s", certsPath, core.Config.Data.Postgres.SSL.RootCert)
 	}
-	if core.Config.Database.Postgres.SSL.Cert != "" {
-		dsn += fmt.Sprintf(" sslcert=%s/%s", certsPath, core.Config.Database.Postgres.SSL.Cert)
+	if core.Config.Data.Postgres.SSL.Cert != "" {
+		dsn += fmt.Sprintf(" sslcert=%s/%s", certsPath, core.Config.Data.Postgres.SSL.Cert)
 	}
-	if core.Config.Database.Postgres.SSL.Key != "" {
-		dsn += fmt.Sprintf(" sslkey=%s/%s", certsPath, core.Config.Database.Postgres.SSL.Key)
+	if core.Config.Data.Postgres.SSL.Key != "" {
+		dsn += fmt.Sprintf(" sslkey=%s/%s", certsPath, core.Config.Data.Postgres.SSL.Key)
 	}
 
 	// Open GORM
@@ -72,7 +72,7 @@ func (pdb *PostgresDB) Migrate() error {
 		// Add other models here
 	}
 
-	switch pdb.Config.Database.Postgres.DDLMode {
+	switch pdb.Config.Data.Postgres.DDLMode {
 	case "create-drop":
 		pdb.Logger.Info("Dropping all tables...")
 		err := pdb.DB.Migrator().DropTable(models...)

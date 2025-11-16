@@ -1,97 +1,57 @@
 package repository
 
 import (
-	"errors"
+	"context"
 	"veg-store-backend/internal/application/infra_interface"
+	"veg-store-backend/internal/domain/model"
 	"veg-store-backend/internal/infrastructure/core"
 	"veg-store-backend/internal/infrastructure/data"
-
-	"gorm.io/gorm"
 )
 
-type Repository[TModel infra_interface.IAuditing[TId], TId comparable] struct {
+type Repository[TEntity infra_interface.IEntity[TId], TId model.AllowedId] struct {
 	*core.Core
-	postgres *data.PostgresDB
+	Postgres *data.PostgresDB
 }
 
-func NewRepository[TModel infra_interface.IAuditing[TId], TId comparable](core *core.Core, postgres *data.PostgresDB) *Repository[TModel, TId] {
-	return &Repository[TModel, TId]{
+func NewRepository[TEntity infra_interface.IEntity[TId], TId model.AllowedId](core *core.Core, postgres *data.PostgresDB) *Repository[TEntity, TId] {
+	return &Repository[TEntity, TId]{
 		Core:     core,
-		postgres: postgres,
+		Postgres: postgres,
 	}
 }
 
-func (repository *Repository[TModel, TId]) FindById(id TId) (TModel, bool, error) {
-	var entity TModel
-	result := repository.postgres.DB.First(&entity, "id = ?", id)
-
-	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		var zero TModel
-		return zero, false, nil
-	}
-
-	return entity, true, result.Error
+func (r *Repository[TEntity, TId]) Create(ctx context.Context, entity *TEntity) error {
+	(*entity).Created()
+	return r.Postgres.DB.WithContext(ctx).Create(entity).Error
 }
 
-func (repository *Repository[TModel, TId]) Save(model TModel) (TId, error) {
-	var zeroId TId
-	if model.GetId() == zeroId {
-		model.Created()
-		return repository.create(model)
-	}
+func (r *Repository[TEntity, TId]) FindById(ctx context.Context, id TId) (TEntity, error) {
+	var entity TEntity
+	err := r.Postgres.DB.WithContext(ctx).First(&entity, id).Error
+	return entity, err
+}
 
-	_, found, err := repository.FindById(model.GetId())
+func (r *Repository[TEntity, TId]) FindAll(ctx context.Context) ([]TEntity, error) {
+	var result []TEntity
+	err := r.Postgres.DB.WithContext(ctx).Where("is_deleted = false").Find(&result).Error
+	return result, err
+}
+
+func (r *Repository[TEntity, TId]) Update(ctx context.Context, entity *TEntity) error {
+	(*entity).Updated()
+	return r.Postgres.DB.WithContext(ctx).Save(entity).Error
+}
+
+func (r *Repository[TEntity, TId]) SoftDelete(ctx context.Context, id TId) error {
+	entity, err := r.FindById(ctx, id)
 	if err != nil {
-		return model.GetId(), err
+		return err
 	}
 
-	if !found {
-		model.Created()
-		return repository.create(model)
-	}
-
-	model.Updated()
-	return repository.update(model)
+	entity.Deleted()
+	return r.Postgres.DB.WithContext(ctx).Save(entity).Error
 }
 
-func (repository *Repository[TModel, TId]) create(model TModel) (TId, error) {
-	model.Created()
-	if err := repository.postgres.DB.Create(model).Error; err != nil {
-		return model.GetId(), err
-	}
-	return model.GetId(), nil
-}
-
-func (repository *Repository[TModel, TId]) update(model TModel) (TId, error) {
-	model.Updated()
-	if err := repository.postgres.DB.Save(model).Error; err != nil {
-		return model.GetId(), err
-	}
-	return model.GetId(), nil
-}
-
-func (repository *Repository[TModel, TId]) Delete(id TId) (TId, error) {
-	existing, found, err := repository.FindById(id)
-	if err != nil {
-		return id, err
-	}
-
-	if !found {
-		return id, nil // Not found or already deleted
-	}
-
-	existing.Deleted()
-	if err := repository.postgres.DB.Save(existing).Error; err != nil {
-		return id, err
-	}
-
-	return existing.GetId(), nil
-}
-
-func (repository *Repository[TModel, TId]) FindAll() ([]TModel, error) {
-	var list []TModel
-	if err := repository.postgres.DB.Find(&list).Error; err != nil {
-		return nil, err
-	}
-	return list, nil
+func (r *Repository[TEntity, TId]) HardDelete(ctx context.Context, id TId) error {
+	return r.Postgres.DB.WithContext(ctx).Delete(new(TEntity), id).Error
 }

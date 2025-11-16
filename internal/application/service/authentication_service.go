@@ -32,11 +32,11 @@ func (service *authenticationService) Tokens(request dto.SignInRequest) (*dto.To
 		return nil, service.Error.Invalid.Username
 	}
 
-	accessToken, err := service.jwtManager.Sign(false, user.Id)
+	accessToken, err := service.jwtManager.Sign(false, user.Id.String())
 	if err != nil {
 		return nil, service.Error.Auth.Unauthenticated
 	}
-	refreshToken, err := service.jwtManager.Sign(true, user.Id)
+	refreshToken, err := service.jwtManager.Sign(true, user.Id.String())
 	if err != nil {
 		return nil, service.Error.Auth.Unauthenticated
 	}

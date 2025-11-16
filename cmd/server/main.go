@@ -63,6 +63,7 @@ func main() {
 			middlewaresCollection *middleware.MiddlewaresCollection,
 			routesCollection *route.RoutesCollection,
 			postgresDB *data.PostgresDB,
+			dataSeeder service.DataSeederService,
 		) {
 			// Setup middlewares and routes
 			middlewaresCollection.Setup()
@@ -72,6 +73,7 @@ func main() {
 			if err := postgresDB.Migrate(); err != nil {
 				zap.NewExample().Fatal("ORM failed to migrate: ", zap.Error(err))
 			}
+			dataSeeder.SeedData()
 
 			lifecycle.Append(fx.Hook{
 				OnStart: func(context context.Context) error {

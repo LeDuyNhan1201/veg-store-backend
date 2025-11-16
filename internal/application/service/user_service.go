@@ -4,6 +4,8 @@ import (
 	"veg-store-backend/internal/application/infra_interface"
 	"veg-store-backend/internal/domain/model"
 	"veg-store-backend/internal/infrastructure/core"
+
+	"github.com/google/uuid"
 )
 
 type UserService interface {
@@ -29,12 +31,9 @@ func (service *userService) Greeting() string {
 }
 
 func (service *userService) FindById(id string) (*model.User, error) {
-	entity, found, err := service.repository.FindById(id)
+	entity, err := service.repository.FindById(nil, model.ToUUID(id))
 	if err != nil {
-		return nil, err
-	}
-	if !found {
-		return nil, nil
+		return nil, service.Error.NotFound.User
 	}
 	return entity, nil
 }
@@ -45,7 +44,7 @@ func (service *userService) FindByUsername(username string) (*model.User, error)
 
 	} else {
 		return &model.User{
-			AuditingModel: model.AuditingModel[string]{Id: "1"},
+			AuditingModel: model.AuditingModel[model.UUID]{Id: model.ToUUID(uuid.New().String())},
 			Name:          "Test",
 			Age:           18,
 			Sex:           true,

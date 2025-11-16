@@ -38,7 +38,7 @@ Server:
   ApiPrefix: "/rest_api"
   ApiVersion: "v1"
 
-Database:
+Data:
   Host: "localhost"
   Port: 5432
 */
@@ -48,9 +48,9 @@ type Config struct {
 	Mode string
 
 	App struct {
-		Name         string `mapstructure:"name"`
-		Version      string `mapstructure:"version"`
-		DebugEnabled bool   `mapstructure:"debug_enabled"`
+		Name            string `mapstructure:"name"`
+		Version         string `mapstructure:"version"`
+		EnableDebugLogs bool   `mapstructure:"enable_debug_logs"`
 	} `mapstructure:"app"`
 
 	Server struct {
@@ -87,8 +87,9 @@ type Config struct {
 		Host string `mapstructure:"host"`
 	} `mapstructure:"swagger"`
 
-	Database struct {
-		Postgres struct {
+	Data struct {
+		EnableDataSeeding bool `mapstructure:"enable_data_seeding"`
+		Postgres          struct {
 			Host     string `mapstructure:"host"`
 			Port     int    `mapstructure:"port"`
 			User     string `mapstructure:"user"`
@@ -102,7 +103,7 @@ type Config struct {
 				Key      string `mapstructure:"key"`
 			} `mapstructure:"ssl"`
 		} `mapstructure:"postgres"`
-	} `mapstructure:"database"`
+	} `mapstructure:"data"`
 }
 
 // Init LoadConfig loads configuration from ./config/config.{mode}.yaml or .yml

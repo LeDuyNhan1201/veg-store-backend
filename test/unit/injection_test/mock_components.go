@@ -43,7 +43,7 @@ func (router *TestHTTPRouter) MockUserRoute(handler *rest_handler.UserHandler) {
 	group := router.AppGroup(router.ApiPath + "/user")
 	{
 		router.AppGET(group, "/hello", handler.Hello)
-		router.AppGET(group, "/details/:id", handler.Details)
+		router.AppGET(group, "/:id", handler.Details)
 		router.AppGET(group, "/", handler.GetAllUsers)
 	}
 }

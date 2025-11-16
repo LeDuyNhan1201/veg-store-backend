@@ -22,7 +22,7 @@ func (route *UserRoute) Setup() {
 	group := route.Router.AppGroup(route.Router.ApiPath + "/user")
 	{
 		route.Router.AppGET(group, "/hello", route.Handler.Hello)
-		route.Router.AppGET(group, "/details/:id", route.Handler.Details)
+		route.Router.AppGET(group, "/:id", route.Handler.Details)
 		route.Router.AppGET(group, "/", route.Handler.GetAllUsers)
 	}
 }

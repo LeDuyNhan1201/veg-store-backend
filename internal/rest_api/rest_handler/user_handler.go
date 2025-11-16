@@ -47,7 +47,7 @@ func (handler *UserHandler) Hello(context *context.Http) {
 // @Param id path string true "user id"
 // @Success 200 {object} dto.HttpResponse[model.User]
 // @Failure 400 {object} dto.HttpResponse[any]
-// @Router /user/details/{id} [get]
+// @Router /user/{id} [get]
 func (handler *UserHandler) Details(context *context.Http) {
 	id := context.Gin.Param("id")
 	user, err := handler.service.FindById(id)
