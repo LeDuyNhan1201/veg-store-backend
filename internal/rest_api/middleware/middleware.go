@@ -1,38 +1,63 @@
 package middleware
 
 import (
-	"veg-store-backend/internal/application/infra_interface"
+	"sort"
+	"veg-store-backend/internal/infrastructure/core"
 	"veg-store-backend/internal/infrastructure/router"
-	"veg-store-backend/util"
 
 	"go.uber.org/fx"
 )
 
-type MiddlewaresCollection struct {
-	Router     *router.Router
-	JWTManager infra_interface.JWTManager
+type Middleware struct {
+	*core.Core
+	Router *router.HTTPRouter
 }
 
-func NewMiddlewareCollections(
-	router *router.Router,
-	jwtManager infra_interface.JWTManager,
-) MiddlewaresCollection {
-	middlewaresCollection := MiddlewaresCollection{
-		Router:     router,
-		JWTManager: jwtManager,
+type IMiddleware interface {
+	Priority() uint8
+	Setup()
+}
+
+type MiddlewaresCollection []IMiddleware
+
+func NewMiddlewaresCollection(
+	localMiddleware *LocaleMiddleware,
+	httpMiddleware *HTTPMiddleware,
+	jwtMiddleware *JWTMiddleware,
+	traceIDMiddleware *TraceIDMiddleware,
+	validationMiddleware *ValidationMiddleware,
+	errorHandlingMiddleware *ErrorHandlingMiddleware,
+) *MiddlewaresCollection {
+	middlewares := MiddlewaresCollection{
+		localMiddleware,
+		httpMiddleware,
+		jwtMiddleware,
+		traceIDMiddleware,
+		validationMiddleware,
+		errorHandlingMiddleware,
 	}
 
-	// Register all middlewares
-	// IMPORTANT: THE ORDER OF MIDDLEWARES MATTERS (FIRST IN, FIRST OUT)
-	middlewaresCollection.Router.Engine.Use(
-		Locale(util.DefaultLocale), // Locale middleware should be the first one to set the locale
-		HttpContext(),              // HttpContext middleware should be after Locale to have access to the locale
-		JWT(jwtManager),            // JWT middleware should be after HttpContext to have access to the HttpContext
-		TraceID(),
-		Validation(),   // Validation middleware only for binding and validating request data
-		ErrorHandler(), // ErrorHandler middleware should be after all other middlewares to catch errors
-	)
-	return middlewaresCollection
+	// Sort by increment priority
+	sort.Slice(middlewares, func(i, j int) bool {
+		return middlewares[i].Priority() < middlewares[j].Priority()
+	})
+
+	return &middlewares
 }
 
-var Module = fx.Options(fx.Invoke(NewMiddlewareCollections))
+func (c *MiddlewaresCollection) Setup() {
+	for _, middleware := range *c {
+		middleware.Setup()
+	}
+}
+
+// Module IMPORTANT: REMEMBER TO ADD NEW MIDDLEWARE TO Module
+var Module = fx.Options(
+	fx.Provide(NewLocaleMiddleware),
+	fx.Provide(NewHTTPMiddleware),
+	fx.Provide(NewJWTMiddleware),
+	fx.Provide(NewTraceIDMiddleware),
+	fx.Provide(NewValidationMiddleware),
+	fx.Provide(NewErrorHandlingMiddleware),
+	fx.Provide(NewMiddlewaresCollection),
+)

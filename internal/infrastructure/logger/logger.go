@@ -1,4 +1,4 @@
-package core
+package logger
 
 import (
 	"encoding/json"
@@ -41,11 +41,11 @@ func (e *PrettyJSONEncoder) EncodeEntry(entry zapcore.Entry, fields []zapcore.Fi
 	return buf, nil
 }
 
-func InitLogger() *zap.Logger {
+func Init(mode string) *zap.Logger {
 	var zapLogger *zap.Logger
 	var err error
 
-	if Configs.Mode == "prod" || Configs.Mode == "production" {
+	if mode == "prod" || mode == "production" {
 		zapLogger, err = zap.NewProduction()
 		if err != nil {
 			panic("Failed to create production logger: " + err.Error())
@@ -53,7 +53,7 @@ func InitLogger() *zap.Logger {
 
 	} else {
 		// Default: development Configs.Mode
-		zapLogger = newPrettyLogger()
+		zapLogger = newPrettyLogger(mode)
 	}
 
 	zap.ReplaceGlobals(zapLogger)
@@ -61,13 +61,13 @@ func InitLogger() *zap.Logger {
 	return zapLogger
 }
 
-func UseGinRequestLogging(engine *gin.Engine) {
+func UseGinRequestLogging(mode string, engine *gin.Engine) {
 	engine.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
 		data := customLoggingFormat(param)
 
 		var jsonData []byte
 		var err error
-		if Configs.Mode == "prod" || Configs.Mode == "production" {
+		if mode == "prod" || mode == "production" {
 			jsonData, err = json.Marshal(data)
 		} else {
 			jsonData, err = json.MarshalIndent(data, "", "  ")
@@ -84,7 +84,7 @@ func UseGinRequestLogging(engine *gin.Engine) {
 	}
 }
 
-func newPrettyLogger() *zap.Logger {
+func newPrettyLogger(mode string) *zap.Logger {
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.TimeKey = "time"
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
@@ -94,11 +94,18 @@ func newPrettyLogger() *zap.Logger {
 	prettyEncoder := &PrettyJSONEncoder{jsonEncoder}
 
 	logLevel := zap.DebugLevel
-	if Configs.Mode == "prod" || Configs.Mode == "production" {
+	if mode == "prod" || mode == "production" {
 		logLevel = zap.InfoLevel
 	}
-	core := zapcore.NewCore(prettyEncoder, zapcore.AddSync(os.Stdout), logLevel)
-	return zap.New(core, zap.AddCaller())
+
+	return zap.New(
+		zapcore.NewCore(
+			prettyEncoder,
+			zapcore.AddSync(os.Stdout),
+			logLevel,
+		),
+		zap.AddCaller(),
+	)
 }
 
 func customLoggingFormat(param gin.LogFormatterParams) map[string]interface{} {

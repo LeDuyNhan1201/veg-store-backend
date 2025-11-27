@@ -5,10 +5,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"veg-store-backend/injection/core"
-	"veg-store-backend/internal/application/exception"
 	"veg-store-backend/internal/application/service"
-	"veg-store-backend/internal/application/validation"
+	"veg-store-backend/internal/infrastructure/core"
+	"veg-store-backend/internal/infrastructure/data"
 	"veg-store-backend/internal/infrastructure/identity"
 	"veg-store-backend/internal/infrastructure/repository"
 	"veg-store-backend/internal/infrastructure/router"
@@ -16,7 +15,6 @@ import (
 	"veg-store-backend/internal/rest_api/rest_handler"
 	"veg-store-backend/internal/rest_api/route"
 
-	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -44,35 +42,50 @@ import (
 // @schemes http https
 
 func main() {
-	injectGlobalComponents()
-
 	dependencies := fx.Options(
+		fx.Provide(core.Init),
+		fx.Provide(data.InitPostgresDB),
 		repository.Module,
 		identity.Module,
 		service.Module,
 		rest_handler.Module,
-		router.Module,
+		fx.Provide(router.InitHTTPRouter),
 		middleware.Module,
-		route.RoutesModule,
+		route.Module,
 	)
 
 	app := fx.New(
 		dependencies,
 
-		fx.Invoke(func(lifecycle fx.Lifecycle, appRouter *router.Router, routesCollection route.RoutesCollection) {
+		fx.Invoke(func(
+			lifecycle fx.Lifecycle,
+			router *router.HTTPRouter,
+			middlewaresCollection *middleware.MiddlewaresCollection,
+			routesCollection *route.RoutesCollection,
+			postgresDB *data.PostgresDB,
+			dataSeeder service.DataSeederService,
+		) {
+			// Setup middlewares and routes
+			middlewaresCollection.Setup()
 			routesCollection.Setup()
+
+			// Run DB migrations
+			if err := postgresDB.Migrate(); err != nil {
+				zap.NewExample().Fatal("ORM failed to migrate: ", zap.Error(err))
+			}
+			dataSeeder.SeedData()
 
 			lifecycle.Append(fx.Hook{
 				OnStart: func(context context.Context) error {
 					go func() {
-						if err := appRouter.HttpRun(); err != nil {
-							core.Logger.Fatal("Server failed to start: ", zap.Error(err))
+						if err := router.HttpRun(); err != nil {
+							zap.NewExample().Fatal("Server failed to start: ", zap.Error(err))
 						}
 					}()
 					return nil
 				},
 				OnStop: func(context context.Context) error {
-					core.Logger.Info("Shutting down server...")
+					zap.NewExample().Info("Shutting down server...")
 					return nil
 				},
 			})
@@ -83,7 +96,7 @@ func main() {
 	startContext, cancel := context.WithTimeout(context.Background(), fx.DefaultTimeout)
 	defer cancel()
 	if err := app.Start(startContext); err != nil {
-		core.Logger.Fatal("Server failed to start: ", zap.Error(err))
+		zap.NewExample().Fatal("Server failed to start: ", zap.Error(err))
 	}
 
 	// Wait for OS signal to terminate
@@ -94,33 +107,6 @@ func main() {
 	stopContext, cancel := context.WithTimeout(context.Background(), fx.DefaultTimeout)
 	defer cancel()
 	if err := app.Stop(stopContext); err != nil {
-		core.Logger.Fatal("Failed to stop application: ", zap.Error(err))
+		zap.NewExample().Fatal("Failed to stop application: ", zap.Error(err))
 	}
-}
-
-func injectGlobalComponents() {
-	core.Configs.Mode = determineMode()
-	core.Logger = core.InitLogger()                                     // Initialize Logger
-	core.Configs = core.Load()                                          // Load configuration
-	core.Translator = core.InitI18n()                                   // Initialize i18n Translator
-	core.Error = exception.InitAppError()                               // Initialize App Error
-	core.ValidationMessageKeys = validation.InitValidationMessageKeys() // Initialize Validation Message Keys
-}
-
-func determineMode() string {
-	mode := os.Getenv("MODE")
-	switch mode {
-	case "production", "prod":
-		gin.SetMode(gin.ReleaseMode)
-	case "test":
-		gin.SetMode(gin.TestMode)
-	default:
-		gin.SetMode(gin.DebugMode)
-	}
-
-	if mode == "" {
-		zap.NewExample().Warn("No 'MODE' is defined. Server will run in 'dev' mode by default.")
-		return "dev"
-	}
-	return mode
 }

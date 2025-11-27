@@ -10,56 +10,57 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"veg-store-backend/injection/core"
+	"veg-store-backend/internal/infrastructure/core"
+	"veg-store-backend/test/unit/injection_test"
 
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
 type HandlerTest[THandler any, TService any] struct {
-	TestEngine   *gin.Engine
+	*core.Core
+	*injection_test.TestHTTPRouter
 	MockInstance THandler
 	MockService  TService
 }
 
 func NewHandlerTest[THandler any, TService any](
-	engine *gin.Engine,
 	handler THandler,
 	service TService,
 ) *HandlerTest[THandler, TService] {
 	return &HandlerTest[THandler, TService]{
-		TestEngine:   engine,
-		MockInstance: handler,
-		MockService:  service,
+		Core:           injection_test.MockCore(),
+		TestHTTPRouter: injection_test.InitTestHTTPRouter(),
+		MockInstance:   handler,
+		MockService:    service,
 	}
 }
 
-func AppURI(path string) string {
-	return core.Configs.Server.ApiPrefix + core.Configs.Server.ApiVersion + path
+func (h *HandlerTest[THandler, TService]) AppURI(path string) string {
+	return h.AppConfig.Server.ApiPrefix + h.AppConfig.Server.ApiVersion + path
 }
 
-func (handler *HandlerTest[THandler, TService]) Get(t *testing.T, path string, headers ...map[string]string) *httptest.ResponseRecorder {
-	return handler.makeRequest(t, http.MethodGet, path, nil, mergeHeaders(headers...))
+func (h *HandlerTest[THandler, TService]) Get(t *testing.T, path string, headers ...map[string]string) *httptest.ResponseRecorder {
+	return h.makeRequest(t, http.MethodGet, path, nil, mergeHeaders(headers...))
 }
 
-func (handler *HandlerTest[THandler, TService]) Post(t *testing.T, path string, body any, headers ...map[string]string) *httptest.ResponseRecorder {
-	return handler.makeRequest(t, http.MethodPost, path, body, mergeHeaders(headers...))
+func (h *HandlerTest[THandler, TService]) Post(t *testing.T, path string, body any, headers ...map[string]string) *httptest.ResponseRecorder {
+	return h.makeRequest(t, http.MethodPost, path, body, mergeHeaders(headers...))
 }
 
-func (handler *HandlerTest[THandler, TService]) Put(t *testing.T, path string, body any, headers ...map[string]string) *httptest.ResponseRecorder {
-	return handler.makeRequest(t, http.MethodPut, path, body, mergeHeaders(headers...))
+func (h *HandlerTest[THandler, TService]) Put(t *testing.T, path string, body any, headers ...map[string]string) *httptest.ResponseRecorder {
+	return h.makeRequest(t, http.MethodPut, path, body, mergeHeaders(headers...))
 }
 
-func (handler *HandlerTest[THandler, TService]) Delete(t *testing.T, path string, headers ...map[string]string) *httptest.ResponseRecorder {
-	return handler.makeRequest(t, http.MethodDelete, path, nil, mergeHeaders(headers...))
+func (h *HandlerTest[THandler, TService]) Delete(t *testing.T, path string, headers ...map[string]string) *httptest.ResponseRecorder {
+	return h.makeRequest(t, http.MethodDelete, path, nil, mergeHeaders(headers...))
 }
 
-func (handler *HandlerTest[THandler, TService]) Patch(t *testing.T, path string, body any, headers ...map[string]string) *httptest.ResponseRecorder {
-	return handler.makeRequest(t, http.MethodPatch, path, body, mergeHeaders(headers...))
+func (h *HandlerTest[THandler, TService]) Patch(t *testing.T, path string, body any, headers ...map[string]string) *httptest.ResponseRecorder {
+	return h.makeRequest(t, http.MethodPatch, path, body, mergeHeaders(headers...))
 }
 
-func (handler *HandlerTest[THandler, TService]) UploadFile(
+func (h *HandlerTest[THandler, TService]) UploadFile(
 	test *testing.T,
 	method string,
 	path string,
@@ -111,10 +112,10 @@ func (handler *HandlerTest[THandler, TService]) UploadFile(
 
 	// Handle HTTP response
 	responseRecorder := httptest.NewRecorder()
-	handler.TestEngine.ServeHTTP(responseRecorder, request)
+	h.ServeHTTP(responseRecorder, request)
 
 	if responseRecorder.Code >= 400 {
-		zap.L().Info("HTTP Response Body Info",
+		h.Logger.Info("HTTP Response Body Info",
 			zap.String("method", method),
 			zap.String("path", path),
 			zap.Any("code", responseRecorder.Code),
@@ -125,7 +126,7 @@ func (handler *HandlerTest[THandler, TService]) UploadFile(
 	return responseRecorder
 }
 
-func (handler *HandlerTest[THandler, TService]) DecodeResponse(
+func (h *HandlerTest[THandler, TService]) DecodeResponse(
 	test *testing.T,
 	responseRecorder *httptest.ResponseRecorder,
 	output any,
@@ -148,7 +149,7 @@ func (handler *HandlerTest[THandler, TService]) DecodeResponse(
 // ====== PRIVATE FUNCTIONS ======= //
 // ================================ //
 
-func (handler *HandlerTest[THandler, TService]) makeRequest(
+func (h *HandlerTest[THandler, TService]) makeRequest(
 	test *testing.T,
 	method, path string,
 	body any,
@@ -170,10 +171,10 @@ func (handler *HandlerTest[THandler, TService]) makeRequest(
 	}
 
 	responseRecorder := httptest.NewRecorder()
-	handler.TestEngine.ServeHTTP(responseRecorder, request)
+	h.ServeHTTP(responseRecorder, request)
 
 	if responseRecorder.Code >= 400 {
-		zap.L().Info("HTTP Response Body Info",
+		h.Logger.Info("HTTP Response Body Info",
 			zap.String("method", method),
 			zap.String("path", path),
 			zap.Any("code", responseRecorder.Code),

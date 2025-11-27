@@ -24,7 +24,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/sign-in": {
+        "/auth": {
             "post": {
                 "description": "Authenticate user and return a token",
                 "consumes": [
@@ -34,7 +34,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "Auth"
                 ],
                 "summary": "Sign in a user",
                 "parameters": [
@@ -64,31 +64,212 @@ const docTemplate = `{
                 }
             }
         },
-        "/heath": {
+        "/auth/me": {
             "get": {
-                "description": "Check if the server is running",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get name of a current user",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "health"
+                    "Auth"
                 ],
-                "summary": "Health Check",
+                "summary": "Me",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.HttpResponse-string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-any"
                         }
                     }
                 }
             }
         },
-        "/user/details/{id}": {
+        "/tasks": {
             "get": {
+                "description": "Get All Tasks",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Get All Tasks",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-array_dto_TaskItem"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-any"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create new task and return task id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Create a task",
+                "parameters": [
+                    {
+                        "description": "Task info",
+                        "name": "task",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateTaskRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-string"
+                        }
+                    }
+                }
+            }
+        },
+        "/tasks/search": {
+            "get": {
+                "description": "Search tasks and return offset page",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Search",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search keyword",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-dto_OffsetPageResult-dto_TaskItem"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-string"
+                        }
+                    }
+                }
+            }
+        },
+        "/tasks/statuses": {
+            "get": {
+                "description": "Get All Preview Statuses",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Get All Statuses",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-array_dto_PreviewStatus"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/hello": {
+            "get": {
+                "description": "Anh trai say gex",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Anh trai say hi",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-string"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get details of a user by id",
                 "consumes": [
                     "application/json"
@@ -97,7 +278,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "Users"
                 ],
                 "summary": "User details",
                 "parameters": [
@@ -124,32 +305,41 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/user/hello": {
-            "get": {
-                "description": "Anh trai say gex",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Anh trai say hi",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.HttpResponse-string"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
+        "dto.CreateTaskRequest": {
+            "type": "object",
+            "required": [
+                "endDay",
+                "startDay",
+                "statusId",
+                "targetDay",
+                "title"
+            ],
+            "properties": {
+                "endDay": {
+                    "type": "string",
+                    "example": "2001-12-31"
+                },
+                "startDay": {
+                    "type": "string",
+                    "example": "2001-12-31"
+                },
+                "statusId": {
+                    "type": "string",
+                    "example": "5259ac80-1823-44d1-a701-0ed1e36fb38c"
+                },
+                "targetDay": {
+                    "type": "string",
+                    "example": "2001-12-31"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Create Task"
+                }
+            }
+        },
         "dto.HttpResponse-any": {
             "type": "object",
             "properties": {
@@ -157,6 +347,63 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "data": {},
+                "http_status": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.HttpResponse-array_dto_PreviewStatus": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PreviewStatus"
+                    }
+                },
+                "http_status": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.HttpResponse-array_dto_TaskItem": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.TaskItem"
+                    }
+                },
+                "http_status": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.HttpResponse-dto_OffsetPageResult-dto_TaskItem": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/dto.OffsetPageResult-dto_TaskItem"
+                },
                 "http_status": {
                     "type": "integer"
                 },
@@ -216,6 +463,37 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.OffsetPageResult-dto_TaskItem": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.TaskItem"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PreviewStatus": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.SignInRequest": {
             "type": "object",
             "required": [
@@ -233,6 +511,32 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.TaskItem": {
+            "type": "object",
+            "properties": {
+                "endDay": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "startDay": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/dto.PreviewStatus"
+                },
+                "targetDay": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.Tokens": {
             "type": "object",
             "properties": {
@@ -247,17 +551,41 @@ const docTemplate = `{
         "model.User": {
             "type": "object",
             "properties": {
+                "UpdatedBy": {
+                    "type": "string"
+                },
                 "age": {
                     "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
+                "isDeleted": {
+                    "type": "boolean"
+                },
                 "name": {
+                    "type": "string"
+                },
+                "password": {
                     "type": "string"
                 },
                 "sex": {
                     "type": "boolean"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer"
                 }
             }
         }

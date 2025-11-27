@@ -4,69 +4,89 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"veg-store-backend/injection/core"
+	"veg-store-backend/internal/application/context"
 	"veg-store-backend/internal/application/dto"
 	"veg-store-backend/internal/application/infra_interface"
+	"veg-store-backend/internal/infrastructure/core"
+	"veg-store-backend/internal/infrastructure/router"
+	"veg-store-backend/util"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-func JWT(jwtManager infra_interface.JWTManager) gin.HandlerFunc {
+type JWTMiddleware struct {
+	*Middleware
+	jwtManager infra_interface.JWTManager
+}
+
+func NewJWTMiddleware(core *core.Core, router *router.HTTPRouter) *JWTMiddleware {
+	return &JWTMiddleware{
+		Middleware: &Middleware{
+			Core:   core,
+			Router: router,
+		},
+	}
+}
+
+func (m *JWTMiddleware) handler() gin.HandlerFunc {
 	return func(ginContext *gin.Context) {
 		path := ginContext.FullPath()
 		// If path empty (don't match any routes) fallback to RequestURI
 		if path == "" {
 			path = ginContext.Request.URL.Path
 		}
-		core.Logger.Info("Verifying JWT", zap.String("path", path))
+		m.Logger.Info("Verifying JWT", zap.String("path", path))
 
 		// Bypass JWT verification for public endpoints
-		for _, endpoint := range core.Configs.Security.PublicEndpoints {
+		for _, endpoint := range m.AppConfig.Security.PublicEndpoints {
 			if matchPath(fmt.Sprintf("%s%s%s",
-				core.Configs.Server.ApiPrefix,
-				core.Configs.Server.ApiVersion, endpoint,
+				m.AppConfig.Server.ApiPrefix,
+				m.AppConfig.Server.ApiVersion, endpoint,
 			), path) {
-				core.Logger.Debug("[JWT] Skipped public endpoint", zap.String("path", path))
+				m.Logger.Debug("[JWT] Skipped public endpoint", zap.String("path", path))
 				ginContext.Next()
 				return
 			}
 		}
 
-		httpContext := core.GetHttpContext(ginContext)
+		httpContext := context.GetHttpContext(ginContext)
 		authHeader := ginContext.GetHeader("Authorization")
 		if authHeader == "" {
 			ginContext.AbortWithStatusJSON(http.StatusUnauthorized, dto.HttpResponse[any]{
 				HttpStatus: http.StatusUnauthorized,
-				Code:       core.Error.Auth.Unauthenticated.Code,
-				Message:    core.Translator.Localize(httpContext.Locale(), core.Error.Auth.Unauthenticated.MessageKey),
+				Code:       m.Error.Auth.Unauthenticated.Code,
+				Message:    m.Localizer.Localize(httpContext.Locale(), m.Error.Auth.Unauthenticated.MessageKey),
 				Data:       nil,
 			})
 			return
 		}
 
 		rawToken := strings.TrimPrefix(authHeader, "Bearer ")
-		claims, err := jwtManager.Verify(rawToken)
+		claims, err := m.jwtManager.Verify(rawToken)
 		if err != nil {
 			ginContext.AbortWithStatusJSON(http.StatusUnauthorized, dto.HttpResponse[any]{
 				HttpStatus: http.StatusUnauthorized,
-				Code:       core.Error.Invalid.Token.Code,
-				Message:    core.Translator.Localize("en", core.Error.Invalid.Token.MessageKey),
-				Data:       nil,
+				Code:       m.Error.Invalid.Token.Code,
+				Message: m.Localizer.Localize(
+					m.AppConfig.Server.DefaultLocale,
+					m.Error.Invalid.Token.MessageKey,
+				),
+				Data: nil,
 			})
 			return
 		}
 
-		// Register SecurityContext in HttpContext
-		securityContext := &core.SecurityContext{
-			Identity: claims.UserID,
+		// Register SecurityContext in Http
+		securityContext := &context.SecurityContext{
+			Identity: claims.UserId,
 			Roles:    claims.Roles,
 		}
 		httpContext.SetSecurityContext(securityContext)
 
-		core.Logger.Debug("[BEFORE] JWT invoked")
+		m.Logger.Debug("[BEFORE] JWT invoked")
 		ginContext.Next()
-		core.Logger.Debug("[AFTER] JWT invoked")
+		m.Logger.Debug("[AFTER] JWT invoked")
 	}
 }
 
@@ -76,4 +96,12 @@ func matchPath(pattern, path string) bool {
 		return strings.HasPrefix(path, prefix)
 	}
 	return pattern == path
+}
+
+func (m *JWTMiddleware) Setup() {
+	m.Router.Engine.Use(m.handler())
+}
+
+func (m *JWTMiddleware) Priority() uint8 {
+	return util.JWTMiddlewarePriority
 }

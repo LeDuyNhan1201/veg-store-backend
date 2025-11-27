@@ -56,6 +56,34 @@ other = "No users found"
 one = "Product not found"
 other = "No products found"
 
+[NotFound.Task]
+one = "Task not found"
+other = "No tasks found"
+
+# ===========================================
+# Fail Errors
+# ===========================================
+
+[Fail.CreateUser]
+one = "Create user fail"
+other = "No users created"
+
+[Fail.CreateProduct]
+one = "Create product fail"
+other = "No products created"
+
+[Fail.CreateTask]
+one = "Create task fail"
+other = "No tasks created"
+
+[Fail.UpdateTask]
+one = "Update task fail"
+other = "No tasks updated"
+
+[Fail.DeleteTask]
+one = "Delete task fail"
+other = "No tasks deleted"
+
 # ===========================================
 # Invalid Errors
 # ===========================================
@@ -104,7 +132,7 @@ other = "Please provide valid email addresses"
 one = "{{.Field}} cannot be empty"
 other = "{{.Field}} cannot be empty for one or more entries"
 
-[Validation.Size]
+[Validation.Range]
 one = "{{.Field}} must have from {{.Min}} to {{.Max}} characters"
 other = "{{.Field}} must have from {{.Min}} to {{.Max}} characters for one or more entries"
 

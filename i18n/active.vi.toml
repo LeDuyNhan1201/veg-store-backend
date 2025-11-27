@@ -40,6 +40,30 @@ other = "Không tìm thấy người dùng"
 one = "Không tìm thấy sản phẩm"
 other = "Không tìm thấy sản phẩm"
 
+[NotFound.Task]
+one = "Không tìm thấy công việc"
+other = "Không tìm thấy công việc"
+
+[Fail.CreateUser]
+one = "Tạo người dùng thất bại"
+other = "Không có người dùng nào được tạo"
+
+[Fail.CreateProduct]
+one = "Tạo sản phẩm thất bại"
+other = "Không có sản phẩm nào được tạo"
+
+[Fail.CreateTask]
+one = "Tạo tác vụ thất bại"
+other = "Không có tác vụ nào được tạo"
+
+[Fail.UpdateTask]
+one = "Cập nhật tác vụ thất bại"
+other = "Không có tác vụ nào được cập nhật"
+
+[Fail.DeleteTask]
+one = "Xóa tác vụ thất bại"
+other = "Không có tác vụ nào được xóa"
+
 [Invalid.Token]
 one = "Token không hợp lệ"
 other = "Token không hợp lệ"
@@ -76,7 +100,7 @@ other = "Vui lòng cung cấp địa chỉ email hợp lệ"
 one = "{{.Field}} không được để trống"
 other = "{{.Field}} không được để trống"
 
-[Validation.Size]
+[Validation.Range]
 one = "{{.Field}} phải có từ {{.Min}} đến {{.Max}} ký tự"
 other = "{{.Field}} phải có từ {{.Min}} đến {{.Max}} ký tự"
 

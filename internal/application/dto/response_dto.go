@@ -2,16 +2,16 @@ package dto
 
 type HttpResponse[TData any] struct {
 	HttpStatus int    `json:"http_status"`
-	Code       string `json:"code"`
-	Message    string `json:"message"`
-	Data       TData  `json:"data"`
+	Code       string `json:"code,omitempty"`
+	Message    string `json:"message,omitempty"`
+	Data       TData  `json:"data,omitempty"`
 }
 
-type Page[T any] struct {
-	Page  int `json:"page"`
-	Size  int `json:"size"`
-	Total int `json:"total"`
-	Items []T `json:"items"`
+type OffsetPageResult[TEntity any] struct {
+	Items []TEntity `json:"items"`
+	Page  int8      `json:"page"`
+	Size  int8      `json:"size"`
+	Total int64     `json:"total"`
 }
 
 type ValidationError struct {

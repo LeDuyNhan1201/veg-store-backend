@@ -1,4 +1,4 @@
-package core
+package context
 
 type SecurityContext struct {
 	Identity string

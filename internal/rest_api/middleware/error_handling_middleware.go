@@ -4,9 +4,10 @@ import (
 	"errors"
 	"net/http"
 	"strings"
-	"veg-store-backend/injection/core"
 	"veg-store-backend/internal/application/dto"
 	"veg-store-backend/internal/application/exception"
+	"veg-store-backend/internal/infrastructure/core"
+	"veg-store-backend/internal/infrastructure/router"
 	"veg-store-backend/util"
 
 	"github.com/gin-gonic/gin"
@@ -14,11 +15,24 @@ import (
 	"go.uber.org/zap"
 )
 
-func ErrorHandler() gin.HandlerFunc {
+type ErrorHandlingMiddleware struct {
+	*Middleware
+}
+
+func NewErrorHandlingMiddleware(core *core.Core, router *router.HTTPRouter) *ErrorHandlingMiddleware {
+	return &ErrorHandlingMiddleware{
+		Middleware: &Middleware{
+			Core:   core,
+			Router: router,
+		},
+	}
+}
+
+func (m *ErrorHandlingMiddleware) handler() gin.HandlerFunc {
 	return func(ginContext *gin.Context) {
-		core.Logger.Debug("[BEFORE] ErrorHandler invoked")
+		m.Logger.Debug("[BEFORE] ErrorHandler invoked")
 		ginContext.Next()
-		core.Logger.Debug("[AFTER] ErrorHandler invoked")
+		m.Logger.Debug("[AFTER] ErrorHandler invoked")
 
 		if len(ginContext.Errors) == 0 {
 			return
@@ -31,35 +45,31 @@ func ErrorHandler() gin.HandlerFunc {
 			return
 		}
 
-		var subError exception.SubError
+		var subError *exception.SubError
 		var response dto.HttpResponse[any]
 		var httpStatus int
 
-		switch rootError.(type) {
-		case exception.SubError:
+		if errors.As(rootError, &subError) {
 			// Map code prefix -> HTTP httpStatus
-			errors.As(rootError, &subError)
 			httpStatus = mapErrorCodeToStatus(subError.Code)
 			response = dto.HttpResponse[any]{
 				HttpStatus: httpStatus,
 				Code:       subError.Code,
-				Message:    core.Translator.T(util.GetLocale(ginContext), subError.MessageKey),
+				Message:    m.Localizer.T(util.GetLocale(ginContext), subError.MessageKey, subError.Args...),
 			}
-
-		default:
-			core.Logger.Error("Unhandled error", zap.Error(rootError))
-			ginContext.JSON(http.StatusInternalServerError, dto.HttpResponse[any]{
+		} else {
+			m.Logger.Error("Unhandled error", zap.Error(rootError))
+			ginContext.AbortWithStatusJSON(http.StatusInternalServerError, dto.HttpResponse[any]{
 				HttpStatus: http.StatusInternalServerError,
 				Code:       "internal/server-error",
 				Message:    "Internal Server Error",
 			})
-			return
 		}
 
 		// Get trace_id
 		traceID := util.GetTraceId(ginContext)
 
-		core.Logger.Error("Request failed",
+		m.Logger.Error("Request failed",
 			zap.String("trace_id", traceID),
 			zap.String("code", subError.Code),
 			zap.String("message", subError.MessageKey),
@@ -67,9 +77,16 @@ func ErrorHandler() gin.HandlerFunc {
 			zap.String("method", ginContext.Request.Method),
 		)
 
-		ginContext.JSON(httpStatus, response)
-		ginContext.Abort()
+		ginContext.AbortWithStatusJSON(httpStatus, response)
 	}
+}
+
+func (m *ErrorHandlingMiddleware) Setup() {
+	m.Router.Engine.Use(m.handler())
+}
+
+func (m *ErrorHandlingMiddleware) Priority() uint8 {
+	return util.ErrorHandlingMiddlewarePriority
 }
 
 func mapErrorCodeToStatus(code string) int {
@@ -82,6 +99,12 @@ func mapErrorCodeToStatus(code string) int {
 		return http.StatusForbidden
 	case strings.HasPrefix(code, "not_found/"):
 		return http.StatusNotFound
+	case strings.HasPrefix(code, "fail/create_"):
+		return http.StatusNotExtended
+	case strings.HasPrefix(code, "fail/update_"):
+		return http.StatusNotModified
+	case strings.HasPrefix(code, "fail/delete_"):
+		return http.StatusNotImplemented
 	default:
 		return http.StatusInternalServerError
 	}

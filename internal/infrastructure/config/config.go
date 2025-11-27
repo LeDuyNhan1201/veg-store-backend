@@ -1,4 +1,4 @@
-package core
+package config
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ import (
 This file handles loading configuration settings from YAML/YML files using Viper.
 Logic:
 - Determine the mode (dev, prod, etc.) from the MODE environment variable (default to "dev").
-- Load configuration from ./config/config.{mode}.yaml or .yml, with a fallback to config.yaml.
+- Init configuration from ./config/config.{mode}.yaml or .yml, with a fallback to config.yaml.
 - Support environment variable expansion in the format ${VAR} or ${VAR:default}.
 - Log loaded configuration values (masking sensitive info like passwords).
 - Unmarshal the configuration into a config struct for easy access.
@@ -38,7 +38,7 @@ Server:
   ApiPrefix: "/rest_api"
   ApiVersion: "v1"
 
-Database:
+Data:
   Host: "localhost"
   Port: 5432
 */
@@ -47,10 +47,17 @@ Database:
 type Config struct {
 	Mode string
 
+	App struct {
+		Name            string `mapstructure:"name"`
+		Version         string `mapstructure:"version"`
+		EnableDebugLogs bool   `mapstructure:"enable_debug_logs"`
+	} `mapstructure:"app"`
+
 	Server struct {
-		Port       string `mapstructure:"port"`
-		ApiPrefix  string `mapstructure:"api_prefix"`
-		ApiVersion string `mapstructure:"api_version"`
+		Port          string `mapstructure:"port"`
+		ApiPrefix     string `mapstructure:"api_prefix"`
+		ApiVersion    string `mapstructure:"api_version"`
+		DefaultLocale string `mapstructure:"default_locale"`
 	} `mapstructure:"server"`
 
 	Security struct {
@@ -80,23 +87,33 @@ type Config struct {
 		Host string `mapstructure:"host"`
 	} `mapstructure:"swagger"`
 
-	Database struct {
-		Host     string `mapstructure:"host"`
-		Port     int    `mapstructure:"port"`
-		User     string `mapstructure:"user"`
-		Password string `mapstructure:"password"`
-		Name     string `mapstructure:"name"`
-	} `mapstructure:"database"`
+	Data struct {
+		EnableDataSeeding bool `mapstructure:"enable_data_seeding"`
+		Postgres          struct {
+			Host     string `mapstructure:"host"`
+			Port     int    `mapstructure:"port"`
+			User     string `mapstructure:"user"`
+			Password string `mapstructure:"password"`
+			DBName   string `mapstructure:"db_name"`
+			DDLMode  string `mapstructure:"ddl_mode"`
+			SSL      struct {
+				Mode     string `mapstructure:"mode"`
+				RootCert string `mapstructure:"root_cert"`
+				Cert     string `mapstructure:"cert"`
+				Key      string `mapstructure:"key"`
+			} `mapstructure:"ssl"`
+		} `mapstructure:"postgres"`
+	} `mapstructure:"data"`
 }
 
-// Load LoadConfig loads configuration from ./config/config.{mode}.yaml or .yml
-func Load() *Config {
-	Logger.Info(fmt.Sprintf("Load configs for '%s' mode.", Configs.Mode))
+// Init LoadConfig loads configuration from ./config/config.{mode}.yaml or .yml
+func Init(mode string) *Config {
+	zap.L().Info(fmt.Sprintf("Init configs for '%s' mode.", mode))
 
-	// Load .env file
+	// Init .env file
 	_ = godotenv.Load()
 
-	readConfigWithFallback()
+	readConfigWithFallback(mode)
 
 	// Expand ${VAR[:default]} syntax using env values
 	for _, key := range viper.AllKeys() {
@@ -108,29 +125,34 @@ func Load() *Config {
 		}
 	}
 
+	zap.L().Info("App info:",
+		zap.String("version", viper.GetString("app.name")),
+		zap.String("name", viper.GetString("app.version")))
+
 	// Log all loaded values (masking passwords)
-	if Configs.Mode != "prod" && Configs.Mode != "production" {
+	if mode != "prod" && mode != "production" {
 		logAppConfig()
 	}
 
 	// Unmarshal (is equivalent to Decode) into config struct
 	var config Config
 	if err := viper.Unmarshal(&config); err != nil {
-		Logger.Fatal("failed to unmarshal config", zap.Error(err))
+		zap.L().Fatal("failed to unmarshal config", zap.Error(err))
 	}
+	config.Mode = mode
 
 	return &config
 }
 
 // --- Helper: fallback config reader ---
-func readConfigWithFallback() {
+func readConfigWithFallback(mode string) {
 	// setup Viper with fallback order: config.{mode}.yaml → config.{mode}.yml → config.yaml
-	viper.SetConfigName(fmt.Sprintf("config.%s", Configs.Mode))
+	viper.SetConfigName(fmt.Sprintf("config.%s", mode))
 	viper.SetConfigType("yaml")
 
 	// Set config path to .../.../config
 	configPath := util.GetConfigPathFromGoMod("config")
-	Logger.Info(fmt.Sprintf("config path: %s", configPath))
+	zap.L().Info(fmt.Sprintf("config path: %s", configPath))
 	viper.AddConfigPath(configPath)
 
 	// Try .yaml first
@@ -152,7 +174,7 @@ func readConfigWithFallback() {
 		return
 	}
 
-	Logger.Fatal("no valid config file found")
+	zap.L().Fatal("no valid config file found")
 }
 
 // --- Helper: supports ${VAR} and ${VAR:default} ---
@@ -171,17 +193,17 @@ func expandEnvWithDefault(input string) string {
 
 		// matches[1] is the variable name, matches[2] is the default value (if any)
 		key := matches[1]
-		def := ""
+		defaultValue := ""
 
 		// If default value is provided
 		if len(matches) == 3 {
-			def = matches[2]
+			defaultValue = matches[2]
 		}
 
-		if val, ok := os.LookupEnv(key); ok && val != "" {
-			return val
+		if value, ok := os.LookupEnv(key); ok && value != "" {
+			return value
 		}
-		return def
+		return defaultValue
 	})
 }
 
@@ -197,7 +219,7 @@ func logAppConfig() {
 		fields = append(fields, zap.Any(key, val))
 	}
 
-	Logger.Info("Application configuration loaded",
+	zap.L().Info("Application configuration loaded",
 		zap.String("config_file", configFile),
 		zap.Any("configs", fields),
 	)

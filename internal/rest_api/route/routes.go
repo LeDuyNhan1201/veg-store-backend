@@ -6,37 +6,40 @@ import (
 	"go.uber.org/fx"
 )
 
-type RoutesCollection []Routes
+type RoutesCollection []IRoute
 
 type Route[THandler any] struct {
 	Handler THandler
-	Router  *router.Router
+	Router  *router.HTTPRouter
 }
 
-type Routes interface {
+type IRoute interface {
 	Setup()
 }
 
 // NewRoutesCollection IMPORTANT: REMEMBER TO ADD NEW ROUTES TO RoutesCollection
 func NewRoutesCollection(
-	userRoutes *UserRoutes,
-	authRoutes *AuthRoutes,
-) RoutesCollection {
-	return RoutesCollection{
+	userRoutes *UserRoute,
+	authRoutes *AuthRoute,
+	taskRoutes *TaskRoute,
+) *RoutesCollection {
+	return &RoutesCollection{
 		userRoutes,
 		authRoutes,
+		taskRoutes,
 	}
 }
 
-func (routesCollection RoutesCollection) Setup() {
-	for _, routes := range routesCollection {
+func (c *RoutesCollection) Setup() {
+	for _, routes := range *c {
 		routes.Setup()
 	}
 }
 
-// RoutesModule IMPORTANT: REMEMBER TO ADD NEW ROUTES TO RoutesModule
-var RoutesModule = fx.Options(
+// Module IMPORTANT: REMEMBER TO ADD NEW ROUTES TO Module
+var Module = fx.Options(
 	fx.Provide(NewUserRoutes),
 	fx.Provide(NewAuthRoutes),
+	fx.Provide(NewTaskRoutes),
 	fx.Provide(NewRoutesCollection),
 )

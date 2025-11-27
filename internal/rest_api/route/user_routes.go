@@ -1,19 +1,16 @@
 package route
 
 import (
-	"veg-store-backend/injection/core"
 	"veg-store-backend/internal/infrastructure/router"
 	"veg-store-backend/internal/rest_api/rest_handler"
-
-	"github.com/gin-gonic/gin"
 )
 
-type UserRoutes struct {
+type UserRoute struct {
 	*Route[*rest_handler.UserHandler]
 }
 
-func NewUserRoutes(userHandler *rest_handler.UserHandler, router *router.Router) *UserRoutes {
-	return &UserRoutes{
+func NewUserRoutes(userHandler *rest_handler.UserHandler, router *router.HTTPRouter) *UserRoute {
+	return &UserRoute{
 		Route: &Route[*rest_handler.UserHandler]{
 			Handler: userHandler,
 			Router:  router,
@@ -21,17 +18,11 @@ func NewUserRoutes(userHandler *rest_handler.UserHandler, router *router.Router)
 	}
 }
 
-func (routes *UserRoutes) Setup() {
-	api := routes.Router.Engine.Group(routes.Router.ApiPath + "/user")
+func (r *UserRoute) Setup() {
+	group := r.Router.AppGroup(r.Router.ApiPath + "/users")
 	{
-		api.GET("/hello", func(ginContext *gin.Context) {
-			routes.Handler.Hello(core.GetHttpContext(ginContext))
-		})
-		api.GET("/details/:id", func(ginContext *gin.Context) {
-			routes.Handler.Details(core.GetHttpContext(ginContext))
-		})
-		api.GET("/", func(ginContext *gin.Context) {
-			routes.Handler.GetAllUsers(core.GetHttpContext(ginContext))
-		})
+		r.Router.AppGET(group, "/hello", r.Handler.Hello)
+		r.Router.AppGET(group, "/:id", r.Handler.Details)
+		r.Router.AppGET(group, "", r.Handler.GetAllUsers)
 	}
 }

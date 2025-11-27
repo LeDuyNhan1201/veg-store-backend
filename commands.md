@@ -13,10 +13,14 @@ air -c .air.toml
 docker exec -it -uroot veg-store-backend bash -c 'cd /app && air -c .air.toml'
 docker exec -it -uroot veg-store-backend bash -c 'cd /app && go run cmd/server/main.go'
 
+docker compose -f docker/docker-compose.dev.yml up --force-recreate postgres -d
+
 # Bonus
 sudo ./scripts/start.sh
 sudo ./scripts/restart.sh
 sudo ./scripts/stop.sh
+
+psql -h localhost -p 5432 -U ldnhan -d veg-store
 ```
 
 ```shell

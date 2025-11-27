@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
-	"veg-store-backend/injection/core"
+	"veg-store-backend/internal/application/context"
 	"veg-store-backend/internal/application/dto"
+	"veg-store-backend/internal/infrastructure/core"
 	"veg-store-backend/util"
 
 	"github.com/gin-gonic/gin"
@@ -15,10 +16,18 @@ import (
 This is a global exception rest_handler for error from panic()
 */
 
-func CustomRecoveryHandler(httpContext *core.HttpContext, recovered interface{}) {
-	traceID := httpContext.Gin.GetString(util.TraceIDContextKey) // Require middleware to attach trace ID
+type RecoveryHandler struct {
+	*core.Core
+}
+
+func NewRecoveryHandler(core *core.Core) *RecoveryHandler {
+	return &RecoveryHandler{Core: core}
+}
+
+func (h *RecoveryHandler) Setup(httpContext *context.Http, recovered interface{}) {
+	traceID := httpContext.Gin.GetString(util.TraceIDContextKey) // Require middleware to attach trace Id
 	stack := string(debug.Stack())
-	core.Logger.Warn(fmt.Sprintf("[PANIC] trace_id=%s error=%v stack trace:\n%s", traceID, recovered, stack))
+	h.Logger.Warn(fmt.Sprintf("[PANIC] trace_id=%s error=%v stack trace:\n%s", traceID, recovered, stack))
 
 	httpContext.JSON(http.StatusInternalServerError, dto.HttpResponse[any]{
 		HttpStatus: http.StatusInternalServerError,

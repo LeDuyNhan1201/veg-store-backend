@@ -2,11 +2,9 @@ package rest_handler
 
 import (
 	"net/http"
-	"veg-store-backend/injection/core"
+	"veg-store-backend/internal/application/context"
 	"veg-store-backend/internal/application/dto"
 	"veg-store-backend/internal/application/service"
-
-	"go.uber.org/fx"
 )
 
 type AuthHandler struct {
@@ -14,32 +12,32 @@ type AuthHandler struct {
 }
 
 func NewAuthHandler(authenticationService service.AuthenticationService) *AuthHandler {
-	return &AuthHandler{service: authenticationService}
+	return &AuthHandler{
+		service: authenticationService,
+	}
 }
 
 // SignIn godoc
 // @Summary Sign in a user
 // @Description Authenticate user and return a token
-// @Tags auth
+// @Tags Auth
 // @Accept json
 // @Produce json
 // @Param user body dto.SignInRequest true "User credentials"
 // @Success 200 {object} dto.HttpResponse[dto.Tokens]
 // @Failure 401 {object} dto.HttpResponse[string]
-// @Router /auth/sign-in [post]
-func (handler *AuthHandler) SignIn(context *core.HttpContext) {
+// @Router /auth [post]
+func (h *AuthHandler) SignIn(context *context.Http) {
 	var request dto.SignInRequest
-	var err error
-
-	err = context.Gin.ShouldBindJSON(&request)
+	err := context.Gin.ShouldBindJSON(&request)
 	if err != nil {
 		context.Gin.Error(err)
 		return
 	}
 
-	tokens, err := handler.service.Tokens(request)
+	tokens, err := h.service.Tokens(request)
 	if err != nil {
-		context.Gin.Error(core.Error.Auth.Unauthenticated)
+		context.Gin.Error(context.Error.Auth.Unauthenticated)
 		return
 	}
 
@@ -49,27 +47,24 @@ func (handler *AuthHandler) SignIn(context *core.HttpContext) {
 	})
 }
 
-//// Info godoc
-//// @Summary User details
-//// @Description Get details of a user by id
-//// @Tags users
-//// @Accept json
-//// @Produce json
-//// @Param id path string true "user id"
-//// @Success 200 {object} dto.HttpResponse[model.User]
-//// @Failure 400 {object} dto.HttpResponse[any]
-//// @Router /auth/info [get]
-//func (rest_handler *AuthHandler) Info(context *core.HttpContext) {
-//	id := context.Gin.Param("id")
-//	user, err := rest_handler.service.FindById(id)
-//	if err != nil {
-//		context.Gin.Error(err)
-//	} else {
-//		context.JSON(http.StatusOK, dto.HttpResponse[*model.User]{
-//			HttpStatus: http.StatusOK,
-//			Data:       user,
-//		})
-//	}
-//}
-
-var AuthHandlerModule = fx.Options(fx.Provide(NewAuthHandler))
+// Info godoc
+// @Security BearerAuth
+// @Summary Me
+// @Description Get name of a current user
+// @Tags Auth
+// @Produce json
+// @Success 200 {object} dto.HttpResponse[string]
+// @Failure 401 {object} dto.HttpResponse[any]
+// @Router /auth/me [get]
+func (h *AuthHandler) Info(context *context.Http) {
+	id := context.SecurityContext.Identity
+	username, err := h.service.Me(id)
+	if err != nil {
+		context.Gin.Error(err)
+		return
+	}
+	context.JSON(http.StatusOK, dto.HttpResponse[string]{
+		HttpStatus: http.StatusOK,
+		Data:       username,
+	})
+}

@@ -1,29 +1,29 @@
 package identity
 
 import (
-	"context"
 	"crypto/rsa"
 	"fmt"
 	"os"
 	"time"
-	"veg-store-backend/injection/core"
 	"veg-store-backend/internal/application/infra_interface"
+	"veg-store-backend/internal/infrastructure/core"
 	"veg-store-backend/util"
 
 	"github.com/golang-jwt/jwt/v5"
-	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
 type jwtManager struct {
+	*core.Core
 	privateKey *rsa.PrivateKey
 	publicKey  *rsa.PublicKey
 }
 
-func NewJWTManager() (infra_interface.JWTManager, error) {
+func NewJWTManager(core *core.Core) (infra_interface.JWTManager, error) {
 	// Set config path to .../.../keypair
-	privateKeyPath := util.GetConfigPathFromGoMod("secrets/keypair") + "/" + core.Configs.JWT.PrivateKey
-	publicKeyPath := util.GetConfigPathFromGoMod("secrets/keypair") + "/" + core.Configs.JWT.PublicKey
+	keypairPath := util.GetConfigPathFromGoMod("secrets/keypair")
+	privateKeyPath := fmt.Sprintf("%s/%s", keypairPath, core.AppConfig.JWT.PrivateKey)
+	publicKeyPath := fmt.Sprintf("%s/%s", keypairPath, core.AppConfig.JWT.PublicKey)
 	core.Logger.Info(fmt.Sprintf("Private key path: %s", privateKeyPath))
 	core.Logger.Info(fmt.Sprintf("Public key path: %s", publicKeyPath))
 
@@ -47,16 +47,26 @@ func NewJWTManager() (infra_interface.JWTManager, error) {
 		core.Logger.Fatal("Error to parse public key", zap.Error(err))
 	}
 
-	return &jwtManager{privateKey, publicKey}, nil
+	return &jwtManager{
+		Core:       core,
+		privateKey: privateKey,
+		publicKey:  publicKey,
+	}, nil
 }
 
-func (manager *jwtManager) Sign(isRefresh bool, userID string, roles ...string) (string, error) {
-	var Expiration time.Duration
+func (jmg *jwtManager) Sign(isRefresh bool, userId string, roles ...string) (string, error) {
 	var err error
+	Expiration, err := util.ParseDuration(jmg.AppConfig.JWT.AccessDuration)
+	if err != nil {
+		jmg.Logger.Error("Error to parse string to duration", zap.Error(err))
+		return "", jmg.Error.Auth.Unauthenticated
+	}
+
 	if isRefresh {
-		Expiration, err = util.ParseDuration(core.Configs.JWT.RefreshDuration)
+		Expiration, err = util.ParseDuration(jmg.AppConfig.JWT.RefreshDuration)
 		if err != nil {
-			core.Logger.Fatal("Error to parse string to duration", zap.Error(err))
+			jmg.Logger.Error("Error to parse string to duration", zap.Error(err))
+			return "", jmg.Error.Auth.Unauthenticated
 		}
 	}
 
@@ -65,55 +75,46 @@ func (manager *jwtManager) Sign(isRefresh bool, userID string, roles ...string) 
 	}
 
 	claims := &infra_interface.JWTClaims{
-		UserID: userID,
+		UserId: userId,
 		Roles:  roles,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:    core.Configs.JWT.ExpectedIssuer,
+			Issuer:    jmg.AppConfig.JWT.ExpectedIssuer,
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(Expiration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	return token.SignedString(manager.privateKey)
+	return token.SignedString(jmg.privateKey)
 }
 
-func (manager *jwtManager) Verify(tokenStr string) (*infra_interface.JWTClaims, error) {
+func (jmg *jwtManager) Verify(tokenStr string) (*infra_interface.JWTClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &infra_interface.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return manager.publicKey, nil
+		return jmg.publicKey, nil
 	})
 	if err != nil {
-		core.Logger.Fatal("Invalid token", zap.Error(err))
+		jmg.Logger.Error("Invalid token", zap.Error(err))
+		return nil, jmg.Error.Invalid.Token
 	}
 
 	claims, ok := token.Claims.(*infra_interface.JWTClaims)
 	if !ok || !token.Valid {
-		core.Logger.Fatal("Invalid claims", zap.Error(err))
+		jmg.Logger.Error("Invalid claims", zap.Error(err))
+		return nil, jmg.Error.Auth.Unauthenticated
 	}
 	return claims, nil
 }
 
-/*----------------------------------INJECTION--------------------------------------*/
-
-func (manager *jwtManager) Name() string { return "JWTManager" }
-func (manager *jwtManager) Start() error {
-	core.Logger.Debug(fmt.Sprintf("%s initialized", manager.Name()))
+func (jmg *jwtManager) toJWTSigningMethod(jwtAlgorithm string) *jwt.SigningMethodRSA {
+	switch jwtAlgorithm {
+	case "RS256":
+		return jwt.SigningMethodRS256
+	case "RS384":
+		return jwt.SigningMethodRS384
+	case "RS512":
+		return jwt.SigningMethodRS512
+	default:
+		jmg.Logger.Fatal("Unsupported signing method", zap.String("algorithm", jwtAlgorithm))
+	}
 	return nil
 }
-func (manager *jwtManager) Stop() error {
-	core.Logger.Debug(fmt.Sprintf("%s destroyed", manager.Name()))
-	return nil
-}
-
-func RegisterJWTManager(lifecycle fx.Lifecycle, manager infra_interface.JWTManager) {
-	lifecycle.Append(fx.Hook{
-		OnStart: func(context context.Context) error {
-			return manager.Start()
-		},
-		OnStop: func(context context.Context) error {
-			return manager.Stop()
-		},
-	})
-}
-
-var JWTManagerModule = fx.Options(fx.Provide(NewJWTManager), fx.Invoke(RegisterJWTManager))

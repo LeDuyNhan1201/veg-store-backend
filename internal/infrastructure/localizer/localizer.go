@@ -1,4 +1,4 @@
-package core
+package localizer
 
 import (
 	"fmt"
@@ -17,23 +17,21 @@ import (
 This file handles internationalization (i18n) using go-i18n.
 Logic:
 - Initialize an i18n bundle with English as the default language.
-- Load all JSON locale files from the ./i18n directory.
+- Load all .toml locale files from the ./i18n directory.
 - Log loaded messages for debugging.
-- Provide a Localize function to retrieve localized messages by ID and language.
+- Provide a Localize function to retrieve localized messages by Id and language.
 
-Example JSON structure:
-{
-  "hello_world": {
-	"message": "Hello, World!"
-  }
-}
+Example .toml structure:
+[Hello]
+one = "Hello {{.DBName}}"
+other = "Hello everyone"
 */
 
 type Localizer struct {
 	Bundle *i18n.Bundle
 }
 
-func InitI18n() *Localizer {
+func Init(mode string) *Localizer {
 	// Initialize i18n bundle
 	bundle := i18n.NewBundle(language.English)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
@@ -42,25 +40,25 @@ func InitI18n() *Localizer {
 	i18nPath := util.GetConfigPathFromGoMod("i18n")
 
 	// Walk through i18n directory and load all .toml files
-	loadI18nMessages(bundle, i18nPath)
+	loadI18nMessages(mode, bundle, i18nPath)
 
-	Logger.Info("All locale files loaded successfully.")
+	zap.L().Info("All locale files loaded successfully.")
 	return &Localizer{Bundle: bundle}
 }
 
-// T - Usage: Translator.T("message_id", params) to get a localized message.
-func (localizer *Localizer) T(locale string, msgID string, params ...map[string]interface{}) string {
-	return localizer.Localize(locale, msgID, params...)
+// T - Usage: Localizer.T("message_id", params) to get a localized message.
+func (l *Localizer) T(locale string, msgID string, params ...map[string]interface{}) string {
+	return l.Localize(locale, msgID, params...)
 }
 
-func (localizer *Localizer) Localize(lang, msgID string, params ...map[string]interface{}) string {
-	// Create a localizer for the specified language
-	specificLocalizer := i18n.NewLocalizer(localizer.Bundle, lang)
+func (l *Localizer) Localize(lang, msgID string, params ...map[string]interface{}) string {
+	// Create a l for the specified language
+	specificLocalizer := i18n.NewLocalizer(l.Bundle, lang)
 
 	/*
 		Create a map for template repository if provided Example template repository:
 		params := map[string]interface{}{
-			"Name": "John",
+			"DBName": "John",
 			"Age": "30",
 		}
 	*/
@@ -97,9 +95,9 @@ func (localizer *Localizer) Localize(lang, msgID string, params ...map[string]in
 	// Localize message
 	msg, err := specificLocalizer.Localize(config)
 	if err != nil {
-		Logger.Warn("Failed to localize message",
+		zap.L().Warn("Failed to localize message",
 			zap.String("lang", lang),
-			zap.String("ID", msgID),
+			zap.String("Id", msgID),
 			zap.Error(err),
 		)
 		return msgID // fallback
@@ -108,10 +106,10 @@ func (localizer *Localizer) Localize(lang, msgID string, params ...map[string]in
 	return msg
 }
 
-func loadI18nMessages(bundle *i18n.Bundle, absPath string) {
+func loadI18nMessages(mode string, bundle *i18n.Bundle, absPath string) {
 	err := filepath.WalkDir(absPath, func(path string, dirEntry fs.DirEntry, err error) error {
 		if err != nil {
-			Logger.Fatal("Error walking through 'i18n' directory", zap.Error(err))
+			zap.L().Fatal("Error walking through 'i18n' directory", zap.Error(err))
 		}
 
 		if dirEntry.IsDir() || filepath.Ext(path) != ".toml" {
@@ -120,20 +118,20 @@ func loadI18nMessages(bundle *i18n.Bundle, absPath string) {
 
 		locale := extractLocaleFromFilename(path)
 		if locale == "" {
-			Logger.Warn("Failed to determine locale from file", zap.String("file", path))
+			zap.L().Warn("Failed to determine locale from file", zap.String("file", path))
 			return nil
 		}
 
 		messageFile, err := bundle.LoadMessageFile(path)
 		if err != nil {
-			Logger.Warn("Failed to load message file",
+			zap.L().Warn("Failed to load message file",
 				zap.String("file", path),
 				zap.Error(err),
 			)
 			return nil
 		}
 
-		if Configs.Mode != "prod" && Configs.Mode != "production" {
+		if mode != "prod" && mode != "production" {
 			logLoadedLocaleMessages(locale, path, messageFile)
 		}
 
@@ -141,7 +139,7 @@ func loadI18nMessages(bundle *i18n.Bundle, absPath string) {
 	})
 
 	if err != nil {
-		Logger.Fatal("Error after walking through 'i18n' directory", zap.Error(err))
+		zap.L().Fatal("Error after walking through 'i18n' directory", zap.Error(err))
 	}
 }
 
@@ -165,10 +163,10 @@ func logLoadedLocaleMessages(locale, path string, messageFile *i18n.MessageFile)
 		)
 	}
 
-	Logger.Info("Loaded locale messages",
+	zap.L().Info("Loaded locale messages",
 		zap.String("locale", locale),
 		zap.String("file", path),
 		zap.Int("message_count", len(messageFile.Messages)),
 	)
-	Logger.Debug("Message details", fields...) // log details only in debug mode
+	zap.L().Debug("Message details", fields...) // log details only in debug mode
 }

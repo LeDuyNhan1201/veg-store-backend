@@ -4,6 +4,7 @@ create_env_file() {
     # Clean old content before overwrite
     : > docker/.env
 
+    echo BACKEND_VERSION=$BACKEND_VERSION >> docker/.env
     echo JWT_ALG=$JWT_ALG >> docker/.env
     echo CERT_SECRET=$CERT_SECRET >> docker/.env
 
@@ -18,7 +19,7 @@ create_env_file() {
 generate_keypair() {
     local keypair_dir="$SECRETS_DIR/keypair"
 
-    # === 📂 Prepare ca folder ===
+    # === Prepare ca folder ===
     if [[ -d "$keypair_dir" ]]; then
       rm -rf "$keypair_dir"/*
     else

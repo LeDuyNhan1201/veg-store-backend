@@ -3,5 +3,7 @@ package repository
 import "go.uber.org/fx"
 
 var Module = fx.Options(
-	UserRepositoryModule,
+	fx.Provide(NewUserRepository),
+	fx.Provide(NewTaskStatusRepository),
+	fx.Provide(NewTaskRepository),
 )

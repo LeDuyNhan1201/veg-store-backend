@@ -5,5 +5,5 @@ import (
 )
 
 var Module = fx.Options(
-	JWTManagerModule,
+	fx.Provide(NewJWTManager),
 )

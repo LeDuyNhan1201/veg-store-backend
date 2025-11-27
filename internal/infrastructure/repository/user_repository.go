@@ -1,47 +1,51 @@
 package repository
 
 import (
-	"context"
-	"fmt"
-	"veg-store-backend/injection/core"
+	"veg-store-backend/internal/application/infra_interface"
+	"veg-store-backend/internal/domain/model"
+	"veg-store-backend/internal/infrastructure/core"
+	"veg-store-backend/internal/infrastructure/data"
+	"veg-store-backend/util"
 
-	"go.uber.org/fx"
+	"github.com/go-faker/faker/v4"
 )
 
-type UserRepository interface {
-	Name() string
-	Start() error
-	Stop() error
-}
-
 type userRepository struct {
+	*Repository[*model.User, model.UUID]
 }
 
-func NewUserRepository() UserRepository {
-	return &userRepository{}
+func NewUserRepository(core *core.Core) infra_interface.UserRepository {
+	return &userRepository{
+		Repository: NewRepository[*model.User, model.UUID](core),
+	}
 }
 
-/*----------------------------------INJECTION--------------------------------------*/
+func (r *userRepository) Seed(db *data.PostgresDB, num int8) error {
+	fakeUsers := make([]model.User, 0, num)
 
-func (repository *userRepository) Name() string { return "UserRepository" }
-func (repository *userRepository) Start() error {
-	core.Logger.Debug(fmt.Sprintf("%s initialized", repository.Name()))
-	return nil
-}
-func (repository *userRepository) Stop() error {
-	core.Logger.Debug(fmt.Sprintf("%s destroyed", repository.Name()))
-	return nil
-}
+	for i := int8(0); i < num; i++ {
+		// Random age 18-120
+		randomAge, _ := faker.RandomInt(18, 120, 1)
 
-func RegisterUserRepository(lifecycle fx.Lifecycle, repository UserRepository) {
-	lifecycle.Append(fx.Hook{
-		OnStart: func(context context.Context) error {
-			return repository.Start()
-		},
-		OnStop: func(context context.Context) error {
-			return repository.Stop()
-		},
-	})
-}
+		// Random sex
+		randomSex, _ := faker.RandomInt(0, 1, 1)
+		sex := randomSex[0] == 0
 
-var UserRepositoryModule = fx.Options(fx.Provide(NewUserRepository), fx.Invoke(RegisterUserRepository))
+		// Create fake user
+		fakeUser := model.User{
+			AuditingModel: model.AuditingModel{
+				CreatedAt: util.RandomDateTime(),
+			},
+			Name:     faker.Name(),
+			Age:      int8(randomAge[0]),
+			Sex:      sex,
+			Email:    faker.Email(),
+			Password: util.HashPassword("password123"),
+		}
+		fakeUser.Created()
+
+		fakeUsers = append(fakeUsers, fakeUser)
+	}
+
+	return db.Create(&fakeUsers).Error
+}

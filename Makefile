@@ -1,10 +1,11 @@
 # -v : show details log per test
 # -cover : enable coverage mode
 # -count=1 : no cache test result
+MODE=dev
+SERVICE_NAME=veg-store-backend
 TEST_FLAGS=-v -cover -count=1
-PKG=./... # All sub packages in root
+PKG_UNIT_TEST=./test/unit/...
 PKG_INTERNAL=./internal/...
-PKG_TEST=./test/unit/...
 DEBUG_PORT=8081
 
 .PHONY: test test-coverage test-one lint tidy
@@ -14,13 +15,20 @@ DEBUG_PORT=8081
 #   make test PKG=./test/unit/rest_handler/rest_test
 test:
 	@echo "Running all unit tests..."
-	@go test $(PKG) $(TEST_FLAGS)
+	@mkdir -p ./test/report
+	@go test $(PKG_UNIT_TEST) $(TEST_FLAGS) \
+		-coverpkg=$(PKG_INTERNAL) \
+		-coverprofile=./test/report/coverage.out \
+		-covermode=atomic
+	@go tool cover -func=./test/report/coverage.out | tail -n 1
+	@go tool cover -html=./test/report/coverage.out -o ./test/report/index.html
+	@echo "Coverage report saved to ./test/report/index.html"
 
 # Run all tests and generate a coverage report
 coverage:
 	@echo "Running tests with coverage report..."
 	@mkdir -p ./test/report
-	@go test ./test/unit/... \
+	@go test $(PKG_UNIT_TEST) $(TEST_FLAGS) \
 		-coverpkg=./internal/... \
 		-coverprofile=./test/report/coverage.out \
 		-covermode=atomic
@@ -34,7 +42,14 @@ coverage:
 #   make test-one PKG=./test/unit/rest_handler/rest_test TEST=TestHello_success
 test-one:
 	@echo "Running specific test: $(TEST)"
-	@go test $(PKG) -v -run $(TEST)
+	@mkdir -p ./test/report
+	@go test $(PKG_UNIT_TEST) -v -run $(TEST) \
+		-coverpkg=$(PKG_INTERNAL) \
+		-coverprofile=./test/report/coverage.out \
+		-covermode=atomic
+	@go tool cover -func=./test/report/coverage.out | tail -n 1
+	@go tool cover -html=./test/report/coverage.out -o ./test/report/index.html
+	@echo "Coverage report saved to ./test/report/index.html"
 
 # Run go vet and golangci-lint
 lint:
@@ -57,22 +72,30 @@ prepare:
 	@go install -v github.com/go-delve/delve/cmd/dlv@latest
 	@go install -v github.com/nicksnyder/go-i18n/v2/goi18n@latest
 	@go install -v github.com/swaggo/swag/cmd/swag@latest
-	@#go install -v github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+# 	@#go install -v github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	@echo "Done"
 
-start:
+
+start-linux:
 	@echo "Starting..."
 	@sudo chown -R $(shell id -u):$(shell id -g) .
 	@sudo chmod +x scripts/*.sh
-	@./scripts/start.sh
+	@./scripts/start.sh $(MODE)
+
+start-windows:
+	@echo "Starting (Windows)..."
+	@sudo chown -R $(shell id -u):$(shell id -g) . || true
+	@chmod +x scripts/*.sh scripts/helper/*.sh
+	@bash -c 'find scripts -type f -name "*.sh" -exec dos2unix {} \;'
+	@bash ./scripts/start.sh $(MODE)
 
 restart:
 	@echo "Restarting..."
-	@./scripts/restart.sh
+	@./scripts/restart.sh $(MODE) $(SERVICE_NAME)
 
 stop:
 	@echo "Stopping..."
-	@./scripts/stop.sh
+	@./scripts/stop.sh $(MODE)
 
 run:
 	@echo "Running..."
@@ -96,13 +119,15 @@ swagger:
 
 force-download:
 	@echo "Cleaning Go module cache..."
+ifneq ($(INSIDE_DOCKER),1)
 	@go clean -modcache
+endif
 
 	@echo "Disabling SSL verification for Git temporarily..."
 	@git config --global http.sslVerify false
 
 	@echo "Configuring Go environment for insecure download..."
-	@go env -w GOINSECURE=github.com,go.googlesource.com,golang.org,go.uber.org,google.golang.org,sigs.k8s.io,rsc.io
+	@go env -w GOINSECURE=github.com,go.googlesource.com,golang.org,go.uber.org,google.golang.org,sigs.k8s.io,rsc.io,proxy.golang.org,go-faker,golang.org/x/text
 	@go env -w GOSUMDB=off
 	@go env -w GOPROXY=direct
 

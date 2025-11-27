@@ -1,10 +1,71 @@
 basePath: /
 definitions:
+  dto.CreateTaskRequest:
+    properties:
+      endDay:
+        example: "2001-12-31"
+        type: string
+      startDay:
+        example: "2001-12-31"
+        type: string
+      statusId:
+        example: 5259ac80-1823-44d1-a701-0ed1e36fb38c
+        type: string
+      targetDay:
+        example: "2001-12-31"
+        type: string
+      title:
+        example: Create Task
+        type: string
+    required:
+    - endDay
+    - startDay
+    - statusId
+    - targetDay
+    - title
+    type: object
   dto.HttpResponse-any:
     properties:
       code:
         type: string
       data: {}
+      http_status:
+        type: integer
+      message:
+        type: string
+    type: object
+  dto.HttpResponse-array_dto_PreviewStatus:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/dto.PreviewStatus'
+        type: array
+      http_status:
+        type: integer
+      message:
+        type: string
+    type: object
+  dto.HttpResponse-array_dto_TaskItem:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/dto.TaskItem'
+        type: array
+      http_status:
+        type: integer
+      message:
+        type: string
+    type: object
+  dto.HttpResponse-dto_OffsetPageResult-dto_TaskItem:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/dto.OffsetPageResult-dto_TaskItem'
       http_status:
         type: integer
       message:
@@ -43,6 +104,26 @@ definitions:
       message:
         type: string
     type: object
+  dto.OffsetPageResult-dto_TaskItem:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.TaskItem'
+        type: array
+      page:
+        type: integer
+      size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.PreviewStatus:
+    properties:
+      id:
+        type: string
+      title:
+        type: string
+    type: object
   dto.SignInRequest:
     properties:
       password:
@@ -55,6 +136,23 @@ definitions:
     - password
     - username
     type: object
+  dto.TaskItem:
+    properties:
+      endDay:
+        type: string
+      id:
+        type: string
+      priority:
+        type: integer
+      startDay:
+        type: string
+      status:
+        $ref: '#/definitions/dto.PreviewStatus'
+      targetDay:
+        type: string
+      title:
+        type: string
+    type: object
   dto.Tokens:
     properties:
       access_token:
@@ -64,14 +162,30 @@ definitions:
     type: object
   model.User:
     properties:
+      UpdatedBy:
+        type: string
       age:
         type: integer
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      email:
+        type: string
       id:
         type: string
+      isDeleted:
+        type: boolean
       name:
+        type: string
+      password:
         type: string
       sex:
         type: boolean
+      updatedAt:
+        type: string
+      version:
+        type: integer
     type: object
 host: localhost:8080
 info:
@@ -87,7 +201,7 @@ info:
   title: RESTFUL API VERSION 1.0
   version: "1.0"
 paths:
-  /auth/sign-in:
+  /auth:
     post:
       consumes:
       - application/json
@@ -112,23 +226,122 @@ paths:
             $ref: '#/definitions/dto.HttpResponse-string'
       summary: Sign in a user
       tags:
-      - auth
-  /heath:
+      - Auth
+  /auth/me:
     get:
-      description: Check if the server is running
+      description: Get name of a current user
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Health Check
+            $ref: '#/definitions/dto.HttpResponse-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-any'
+      security:
+      - BearerAuth: []
+      summary: Me
       tags:
-      - health
-  /user/details/{id}:
+      - Auth
+  /tasks:
+    get:
+      consumes:
+      - application/json
+      description: Get All Tasks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-array_dto_TaskItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-any'
+      summary: Get All Tasks
+      tags:
+      - Tasks
+    post:
+      consumes:
+      - application/json
+      description: Create new task and return task id
+      parameters:
+      - description: Task info
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-string'
+      summary: Create a task
+      tags:
+      - Tasks
+  /tasks/search:
+    get:
+      consumes:
+      - application/json
+      description: Search tasks and return offset page
+      parameters:
+      - description: Search keyword
+        in: query
+        name: keyword
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-dto_OffsetPageResult-dto_TaskItem'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-string'
+      summary: Search
+      tags:
+      - Tasks
+  /tasks/statuses:
+    get:
+      consumes:
+      - application/json
+      description: Get All Preview Statuses
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-array_dto_PreviewStatus'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-any'
+      summary: Get All Statuses
+      tags:
+      - Tasks
+  /users/{id}:
     get:
       consumes:
       - application/json
@@ -150,10 +363,12 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/dto.HttpResponse-any'
+      security:
+      - BearerAuth: []
       summary: User details
       tags:
-      - users
-  /user/hello:
+      - Users
+  /users/hello:
     get:
       consumes:
       - application/json
@@ -167,7 +382,7 @@ paths:
             $ref: '#/definitions/dto.HttpResponse-string'
       summary: Anh trai say hi
       tags:
-      - users
+      - Users
 schemes:
 - http
 - https
