@@ -1,4 +1,4 @@
-package infra_interface
+package iface
 
 import (
 	"context"

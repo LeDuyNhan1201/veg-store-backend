@@ -11,9 +11,9 @@ import (
 	"veg-store-backend/internal/infrastructure/identity"
 	"veg-store-backend/internal/infrastructure/repository"
 	"veg-store-backend/internal/infrastructure/router"
-	"veg-store-backend/internal/rest_api/middleware"
-	"veg-store-backend/internal/rest_api/rest_handler"
-	"veg-store-backend/internal/rest_api/route"
+	"veg-store-backend/internal/api/middleware"
+	"veg-store-backend/internal/api/resthandler"
+	"veg-store-backend/internal/api/route"
 
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -48,7 +48,7 @@ func main() {
 		repository.Module,
 		identity.Module,
 		service.Module,
-		rest_handler.Module,
+		resthandler.Module,
 		fx.Provide(router.InitHTTPRouter),
 		middleware.Module,
 		route.Module,

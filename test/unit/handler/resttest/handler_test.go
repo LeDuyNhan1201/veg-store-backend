@@ -1,4 +1,4 @@
-package rest_test
+package resttest
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"testing"
 	"veg-store-backend/internal/infrastructure/core"
-	"veg-store-backend/test/unit/injection_test"
+	"veg-store-backend/test/unit/injectiontest"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -19,7 +19,7 @@ import (
 
 type HandlerTest[THandler any, TService any] struct {
 	*core.Core
-	*injection_test.TestHTTPRouter
+	*injectiontest.TestHTTPRouter
 	MockInstance THandler
 	MockService  TService
 }
@@ -29,8 +29,8 @@ func NewHandlerTest[THandler any, TService any](
 	service TService,
 ) *HandlerTest[THandler, TService] {
 	return &HandlerTest[THandler, TService]{
-		Core:           injection_test.MockCore(),
-		TestHTTPRouter: injection_test.InitTestHTTPRouter(),
+		Core:           injectiontest.MockCore(),
+		TestHTTPRouter: injectiontest.InitTestHTTPRouter(),
 		MockInstance:   handler,
 		MockService:    service,
 	}

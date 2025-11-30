@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"veg-store-backend/internal/application/infra_interface"
+	"veg-store-backend/internal/application/iface"
 	"veg-store-backend/internal/domain/model"
 	"veg-store-backend/internal/infrastructure/core"
 	"veg-store-backend/internal/infrastructure/data"
@@ -15,7 +15,7 @@ type taskRepository struct {
 	*Repository[*model.Task, model.UUID]
 }
 
-func NewTaskRepository(core *core.Core) infra_interface.TaskRepository {
+func NewTaskRepository(core *core.Core) iface.TaskRepository {
 	return &taskRepository{
 		Repository: NewRepository[*model.Task, model.UUID](core),
 	}

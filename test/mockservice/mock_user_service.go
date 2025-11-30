@@ -1,4 +1,4 @@
-package service_mock
+package mockservice
 
 import (
 	"veg-store-backend/internal/domain/model"

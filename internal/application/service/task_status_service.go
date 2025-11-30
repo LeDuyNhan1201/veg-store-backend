@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"veg-store-backend/internal/application/dto"
-	"veg-store-backend/internal/application/infra_interface"
+	"veg-store-backend/internal/application/iface"
 	"veg-store-backend/internal/application/mapper"
 	"veg-store-backend/internal/domain/model"
 	"veg-store-backend/internal/infrastructure/core"
@@ -16,16 +16,16 @@ type TaskStatusService interface {
 }
 
 type taskStatusService struct {
-	Service[*data.PostgresDB, infra_interface.TaskStatusRepository]
+	Service[*data.PostgresDB, iface.TaskStatusRepository]
 }
 
 func NewTaskStatusService(
 	core *core.Core,
 	db *data.PostgresDB,
-	repository infra_interface.TaskStatusRepository,
+	repository iface.TaskStatusRepository,
 ) TaskStatusService {
 	return &taskStatusService{
-		Service[*data.PostgresDB, infra_interface.TaskStatusRepository]{
+		Service[*data.PostgresDB, iface.TaskStatusRepository]{
 			Core:       core,
 			DB:         db,
 			Repository: repository,

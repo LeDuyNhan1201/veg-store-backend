@@ -1,4 +1,4 @@
-package rest_handler
+package resthandler
 
 import "go.uber.org/fx"
 

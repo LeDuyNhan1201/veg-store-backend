@@ -10,7 +10,7 @@ import (
 	"veg-store-backend/internal/application/validation"
 	"veg-store-backend/internal/infrastructure/core"
 	"veg-store-backend/internal/infrastructure/logger"
-	"veg-store-backend/internal/rest_api/rest_handler"
+	"veg-store-backend/internal/api/resthandler"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -78,7 +78,7 @@ func initGinEngine(core *core.Core) *gin.Engine {
 
 	// Register Custom recovery rest_handler for Gin
 	engine.Use(gin.CustomRecovery(func(ginContext *gin.Context, recovered interface{}) {
-		rest_handler.NewRecoveryHandler(core).Setup(context.GetHttpContext(ginContext), recovered)
+		resthandler.NewRecoveryHandler(core).Setup(context.GetHttpContext(ginContext), recovered)
 	}))
 
 	err := engine.SetTrustedProxies([]string{"127.0.0.1"})

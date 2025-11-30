@@ -2,16 +2,16 @@ package route
 
 import (
 	"veg-store-backend/internal/infrastructure/router"
-	"veg-store-backend/internal/rest_api/rest_handler"
+	"veg-store-backend/internal/api/resthandler"
 )
 
 type TaskRoute struct {
-	*Route[*rest_handler.TaskHandler]
+	*Route[*resthandler.TaskHandler]
 }
 
-func NewTaskRoutes(authHandler *rest_handler.TaskHandler, router *router.HTTPRouter) *TaskRoute {
+func NewTaskRoutes(authHandler *resthandler.TaskHandler, router *router.HTTPRouter) *TaskRoute {
 	return &TaskRoute{
-		Route: &Route[*rest_handler.TaskHandler]{
+		Route: &Route[*resthandler.TaskHandler]{
 			Handler: authHandler,
 			Router:  router,
 		},

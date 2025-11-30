@@ -1,25 +1,25 @@
-package rest_test
+package resttest
 
 import (
 	"fmt"
 	"net/http"
 	"testing"
 	"veg-store-backend/internal/application/dto"
-	"veg-store-backend/internal/rest_api/rest_handler"
-	"veg-store-backend/test/service_mock"
+	"veg-store-backend/internal/api/resthandler"
+	"veg-store-backend/test/mockservice"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
 type UserHandler struct {
-	*HandlerTest[*rest_handler.UserHandler, *service_mock.MockUserService]
+	*HandlerTest[*resthandler.UserHandler, *mockservice.MockUserService]
 }
 
 func setupUserHandlerTest() *UserHandler {
-	mockService := new(service_mock.MockUserService)
-	mockHandler := rest_handler.NewUserHandler(mockService)
-	handlerTest := NewHandlerTest[*rest_handler.UserHandler, *service_mock.MockUserService](mockHandler, mockService)
+	mockService := new(mockservice.MockUserService)
+	mockHandler := resthandler.NewUserHandler(mockService)
+	handlerTest := NewHandlerTest[*resthandler.UserHandler, *mockservice.MockUserService](mockHandler, mockService)
 	handlerTest.MockUserRoute(mockHandler)
 	return &UserHandler{
 		HandlerTest: handlerTest,

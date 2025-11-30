@@ -2,16 +2,16 @@ package route
 
 import (
 	"veg-store-backend/internal/infrastructure/router"
-	"veg-store-backend/internal/rest_api/rest_handler"
+	"veg-store-backend/internal/api/resthandler"
 )
 
 type UserRoute struct {
-	*Route[*rest_handler.UserHandler]
+	*Route[*resthandler.UserHandler]
 }
 
-func NewUserRoutes(userHandler *rest_handler.UserHandler, router *router.HTTPRouter) *UserRoute {
+func NewUserRoutes(userHandler *resthandler.UserHandler, router *router.HTTPRouter) *UserRoute {
 	return &UserRoute{
-		Route: &Route[*rest_handler.UserHandler]{
+		Route: &Route[*resthandler.UserHandler]{
 			Handler: userHandler,
 			Router:  router,
 		},

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"veg-store-backend/internal/application/context"
 	"veg-store-backend/internal/application/dto"
-	"veg-store-backend/internal/application/infra_interface"
+	"veg-store-backend/internal/application/iface"
 	"veg-store-backend/internal/infrastructure/core"
 	"veg-store-backend/internal/infrastructure/router"
 	"veg-store-backend/util"
@@ -17,7 +17,7 @@ import (
 
 type JWTMiddleware struct {
 	*Middleware
-	jwtManager infra_interface.JWTManager
+	jwtManager iface.JWTManager
 }
 
 func NewJWTMiddleware(core *core.Core, router *router.HTTPRouter) *JWTMiddleware {

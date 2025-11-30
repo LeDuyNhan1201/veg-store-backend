@@ -2,7 +2,7 @@ package service
 
 import (
 	"veg-store-backend/internal/application/dto"
-	"veg-store-backend/internal/application/infra_interface"
+	"veg-store-backend/internal/application/iface"
 	"veg-store-backend/internal/infrastructure/core"
 	"veg-store-backend/internal/infrastructure/data"
 )
@@ -15,14 +15,14 @@ type AuthenticationService interface {
 type authenticationService struct {
 	Service[*data.PostgresDB, any]
 	userService UserService
-	jwtManager  infra_interface.JWTManager
+	jwtManager  iface.JWTManager
 }
 
 func NewAuthenticationService(
 	core *core.Core,
 	db *data.PostgresDB,
 	userService UserService,
-	jwtManager infra_interface.JWTManager,
+	jwtManager iface.JWTManager,
 ) AuthenticationService {
 	return &authenticationService{
 		Service: Service[*data.PostgresDB, any]{

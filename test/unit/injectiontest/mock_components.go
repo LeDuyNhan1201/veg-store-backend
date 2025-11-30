@@ -1,4 +1,4 @@
-package injection_test
+package injectiontest
 
 import (
 	"veg-store-backend/internal/application/exception"
@@ -7,8 +7,8 @@ import (
 	"veg-store-backend/internal/infrastructure/localizer"
 	"veg-store-backend/internal/infrastructure/logger"
 	"veg-store-backend/internal/infrastructure/router"
-	"veg-store-backend/internal/rest_api/middleware"
-	"veg-store-backend/internal/rest_api/rest_handler"
+	"veg-store-backend/internal/api/middleware"
+	"veg-store-backend/internal/api/resthandler"
 )
 
 func MockCore() *core.Core {
@@ -39,7 +39,7 @@ type TestHTTPRouter struct {
 	*router.HTTPRouter
 }
 
-func (r *TestHTTPRouter) MockUserRoute(handler *rest_handler.UserHandler) {
+func (r *TestHTTPRouter) MockUserRoute(handler *resthandler.UserHandler) {
 	group := r.AppGroup(r.ApiPath + "/users")
 	{
 		r.AppGET(group, "/hello", handler.Hello)

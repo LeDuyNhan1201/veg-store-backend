@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 	"veg-store-backend/internal/application/dto"
-	"veg-store-backend/internal/application/infra_interface"
+	"veg-store-backend/internal/application/iface"
 	"veg-store-backend/internal/domain/model"
 	"veg-store-backend/internal/infrastructure/core"
 	"veg-store-backend/internal/infrastructure/data"
@@ -14,11 +14,11 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-type Repository[TEntity infra_interface.IEntity, TId model.AllowedId] struct {
+type Repository[TEntity iface.IEntity, TId model.AllowedId] struct {
 	*core.Core
 }
 
-func NewRepository[TEntity infra_interface.IEntity, TId model.AllowedId](core *core.Core) *Repository[TEntity, TId] {
+func NewRepository[TEntity iface.IEntity, TId model.AllowedId](core *core.Core) *Repository[TEntity, TId] {
 	return &Repository[TEntity, TId]{
 		Core: core,
 	}

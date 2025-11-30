@@ -1,7 +1,7 @@
-package identity_mock
+package mockidentity
 
 import (
-	"veg-store-backend/internal/application/infra_interface"
+	"veg-store-backend/internal/application/iface"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -15,8 +15,8 @@ func (mck *MockJWTManager) Sign(isRefresh bool, userID string, roles ...string) 
 	return args.String(0), args.Error(1)
 }
 
-func (mck *MockJWTManager) Verify(rawToken string) (*infra_interface.JWTClaims, error) {
+func (mck *MockJWTManager) Verify(rawToken string) (*iface.JWTClaims, error) {
 	args := mck.Called(rawToken)
-	claims, _ := args.Get(0).(*infra_interface.JWTClaims)
+	claims, _ := args.Get(0).(*iface.JWTClaims)
 	return claims, args.Error(1)
 }

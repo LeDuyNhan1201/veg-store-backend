@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"time"
-	"veg-store-backend/internal/application/infra_interface"
+	"veg-store-backend/internal/application/iface"
 	"veg-store-backend/internal/infrastructure/core"
 	"veg-store-backend/util"
 
@@ -19,7 +19,7 @@ type jwtManager struct {
 	publicKey  *rsa.PublicKey
 }
 
-func NewJWTManager(core *core.Core) (infra_interface.JWTManager, error) {
+func NewJWTManager(core *core.Core) (iface.JWTManager, error) {
 	// Set config path to .../.../keypair
 	keypairPath := util.GetConfigPathFromGoMod("secrets/keypair")
 	privateKeyPath := fmt.Sprintf("%s/%s", keypairPath, core.AppConfig.JWT.PrivateKey)
@@ -74,7 +74,7 @@ func (jmg *jwtManager) Sign(isRefresh bool, userId string, roles ...string) (str
 		roles = []string{}
 	}
 
-	claims := &infra_interface.JWTClaims{
+	claims := &iface.JWTClaims{
 		UserId: userId,
 		Roles:  roles,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -88,8 +88,8 @@ func (jmg *jwtManager) Sign(isRefresh bool, userId string, roles ...string) (str
 	return token.SignedString(jmg.privateKey)
 }
 
-func (jmg *jwtManager) Verify(tokenStr string) (*infra_interface.JWTClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &infra_interface.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+func (jmg *jwtManager) Verify(tokenStr string) (*iface.JWTClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &iface.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return jmg.publicKey, nil
 	})
 	if err != nil {
@@ -97,7 +97,7 @@ func (jmg *jwtManager) Verify(tokenStr string) (*infra_interface.JWTClaims, erro
 		return nil, jmg.Error.Invalid.Token
 	}
 
-	claims, ok := token.Claims.(*infra_interface.JWTClaims)
+	claims, ok := token.Claims.(*iface.JWTClaims)
 	if !ok || !token.Valid {
 		jmg.Logger.Error("Invalid claims", zap.Error(err))
 		return nil, jmg.Error.Auth.Unauthenticated

@@ -2,16 +2,16 @@ package route
 
 import (
 	"veg-store-backend/internal/infrastructure/router"
-	"veg-store-backend/internal/rest_api/rest_handler"
+	"veg-store-backend/internal/api/resthandler"
 )
 
 type AuthRoute struct {
-	*Route[*rest_handler.AuthHandler]
+	*Route[*resthandler.AuthHandler]
 }
 
-func NewAuthRoutes(authHandler *rest_handler.AuthHandler, router *router.HTTPRouter) *AuthRoute {
+func NewAuthRoutes(authHandler *resthandler.AuthHandler, router *router.HTTPRouter) *AuthRoute {
 	return &AuthRoute{
-		Route: &Route[*rest_handler.AuthHandler]{
+		Route: &Route[*resthandler.AuthHandler]{
 			Handler: authHandler,
 			Router:  router,
 		},

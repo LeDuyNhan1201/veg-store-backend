@@ -20,7 +20,7 @@ type Http struct {
 	SecurityContext *SecurityContext
 }
 
-// GetHttpContext - Usage: httpContext := core.GetHttpContext(c) to get the Http in a rest_handler.
+// GetHttpContext - Usage: httpContext := core.GetHttpContext(c) to get the Http in a resthandler.
 func GetHttpContext(ginContext *gin.Context) *Http {
 	val, exists := ginContext.Get(util.AppContextKey)
 	if !exists {

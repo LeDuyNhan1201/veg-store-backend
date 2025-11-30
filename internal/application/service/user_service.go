@@ -1,7 +1,7 @@
 package service
 
 import (
-	"veg-store-backend/internal/application/infra_interface"
+	"veg-store-backend/internal/application/iface"
 	"veg-store-backend/internal/domain/model"
 	"veg-store-backend/internal/infrastructure/core"
 	"veg-store-backend/internal/infrastructure/data"
@@ -14,16 +14,16 @@ type UserService interface {
 }
 
 type userService struct {
-	Service[*data.PostgresDB, infra_interface.UserRepository]
+	Service[*data.PostgresDB, iface.UserRepository]
 }
 
 func NewUserService(
 	core *core.Core,
 	db *data.PostgresDB,
-	repository infra_interface.UserRepository,
+	repository iface.UserRepository,
 ) UserService {
 	return &userService{
-		Service[*data.PostgresDB, infra_interface.UserRepository]{
+		Service[*data.PostgresDB, iface.UserRepository]{
 			Core:       core,
 			DB:         db,
 			Repository: repository,
