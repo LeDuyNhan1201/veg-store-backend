@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	"veg-store-backend/internal/application/dto"
 	"veg-store-backend/internal/application/iface"
 	"veg-store-backend/internal/application/mapper"
@@ -47,10 +48,9 @@ func (s *taskService) Search(
 		Size:  opt.Size,
 		Total: 0,
 	}
-
 	rawPage, err := s.Repository.OffsetPage(s.DB, ctx, opt)
 	if err != nil {
-		return result, s.Error.NotFound.Task.MoreInfo(map[string]interface{}{
+		return result, s.Error.NotFound.Task.MoreInfo(map[string]any{
 			"Count": 2,
 		})
 	}
@@ -65,7 +65,7 @@ func (s *taskService) Search(
 func (s *taskService) FindAll(ctx context.Context) ([]dto.TaskItem, error) {
 	statuses, err := s.Repository.FindAll(s.DB, ctx)
 	if err != nil {
-		return make([]dto.TaskItem, 0), s.Error.NotFound.Task.MoreInfo(map[string]interface{}{
+		return make([]dto.TaskItem, 0), s.Error.NotFound.Task.MoreInfo(map[string]any{
 			"Count": 2,
 		})
 	}

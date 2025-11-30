@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+
 	"veg-store-backend/internal/application/context"
 	"veg-store-backend/internal/application/dto"
 	"veg-store-backend/internal/application/service"
@@ -36,10 +37,10 @@ func NewTaskHandler(
 // @Success 200 {object} dto.HttpResponse[dto.OffsetPageResult[dto.TaskItem]]
 // @Failure 401 {object} dto.HttpResponse[string]
 // @Router /tasks/search [get]
-func (h *TaskHandler) Search(context *context.Http) {
-	keyword := context.Gin.Query("keyword")
-	pageNum, _ := strconv.Atoi(context.Gin.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(context.Gin.DefaultQuery("size", "10"))
+func (h *TaskHandler) Search(ctx *context.Http) {
+	keyword := ctx.Gin.Query("keyword")
+	pageNum, _ := strconv.Atoi(ctx.Gin.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(ctx.Gin.DefaultQuery("size", "10"))
 
 	var where []dto.WhereCondition
 	if keyword != "" {
@@ -50,7 +51,7 @@ func (h *TaskHandler) Search(context *context.Http) {
 		})
 	}
 
-	page, err := h.taskService.Search(context.Gin, dto.OffsetPageOption{
+	page, err := h.taskService.Search(ctx.Gin, dto.OffsetPageOption{
 		Page:  int8(pageNum),
 		Size:  int8(pageSize),
 		Where: where,
@@ -60,11 +61,11 @@ func (h *TaskHandler) Search(context *context.Http) {
 		Preload: []string{"Status"},
 	})
 	if err != nil {
-		context.Gin.Error(err)
+		ctx.Gin.Error(err)
 		return
 	}
 
-	context.JSON(http.StatusOK, dto.HttpResponse[dto.OffsetPageResult[dto.TaskItem]]{
+	ctx.JSON(http.StatusOK, dto.HttpResponse[dto.OffsetPageResult[dto.TaskItem]]{
 		HttpStatus: http.StatusOK,
 		Data:       *page,
 	})
@@ -130,7 +131,7 @@ func (h *TaskHandler) Create(ctx *context.Http) {
 		return
 	}
 
-	taskId, err := h.taskService.Create(ctx.Gin, request)
+	taskID, err := h.taskService.Create(ctx.Gin, request)
 	if err != nil {
 		ctx.Gin.Error(err)
 		return
@@ -138,6 +139,6 @@ func (h *TaskHandler) Create(ctx *context.Http) {
 
 	ctx.JSON(http.StatusCreated, dto.HttpResponse[string]{
 		HttpStatus: http.StatusCreated,
-		Data:       taskId,
+		Data:       taskID,
 	})
 }

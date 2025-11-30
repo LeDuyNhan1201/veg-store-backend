@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
 	"veg-store-backend/internal/application/dto"
 	"veg-store-backend/internal/application/iface"
 	"veg-store-backend/internal/domain/model"
@@ -65,7 +66,6 @@ func (r *Repository[TEntity, TId]) OffsetPage(
 	db *data.PostgresDB, ctx context.Context,
 	opt dto.OffsetPageOption,
 ) (dto.OffsetPageResult[TEntity], error) {
-
 	var result dto.OffsetPageResult[TEntity]
 	var items []TEntity
 	var total int64
@@ -77,7 +77,8 @@ func (r *Repository[TEntity, TId]) OffsetPage(
 	// ------------------------
 	for _, whereCondition := range opt.Where {
 		field := strcase.ToSnake(whereCondition.Field)
-		queryBuilder = db.Where(fmt.Sprintf("%s %s ?", field, whereCondition.Operator), whereCondition.Value)
+		queryBuilder = queryBuilder.Where(fmt.Sprintf("%s %s ?", field, whereCondition.Operator), whereCondition.Value)
+		r.Logger.Info(fmt.Sprintf("Applied WHERE condition: %s %s %v", field, whereCondition.Operator, whereCondition.Value))
 	}
 
 	// ------------------------
@@ -89,14 +90,14 @@ func (r *Repository[TEntity, TId]) OffsetPage(
 		if dir != "ASC" && dir != "DESC" {
 			dir = "ASC"
 		}
-		queryBuilder = db.Order(fmt.Sprintf("%s %s", field, dir))
+		queryBuilder = queryBuilder.Order(fmt.Sprintf("%s %s", field, dir))
 	}
 
 	// ------------------------
 	// PRELOAD relations
 	// ------------------------
 	for _, relation := range opt.Preload {
-		queryBuilder = db.Preload(relation)
+		queryBuilder = queryBuilder.Preload(relation)
 	}
 
 	// ------------------------
