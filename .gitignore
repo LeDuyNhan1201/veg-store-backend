@@ -72,6 +72,7 @@ logs/
 secrets/
 secrets/certs/
 config/config.local.yaml
+config/config.local.yml
 
 # -----------------------------
 # Delve debug binaries
