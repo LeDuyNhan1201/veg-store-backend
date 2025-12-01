@@ -115,7 +115,7 @@ swagger:
 	@if ! command -v swag >/dev/null 2>&1; then \
 		echo "'swag' not found. Please run 'make prepare' first"; \
     fi
-	@swag init -g main.go --parseDependency --parseInternal --dir ./cmd/server,./internal/application/dto,./internal/rest_api/rest_handler,./internal/infrastructure/router -o docs
+	@swag init -g main.go --parseDependency --parseInternal --dir ./cmd/server,./internal/application/dto,./internal/api/resthandler,./internal/infrastructure/router -o docs
 
 force-download:
 	@echo "Cleaning Go module cache..."

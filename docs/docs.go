@@ -163,7 +163,7 @@ const docTemplate = `{
             }
         },
         "/tasks/search": {
-            "get": {
+            "post": {
                 "description": "Search tasks and return offset page",
                 "consumes": [
                     "application/json"
@@ -177,10 +177,13 @@ const docTemplate = `{
                 "summary": "Search",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Search keyword",
-                        "name": "keyword",
-                        "in": "query"
+                        "description": "Filters",
+                        "name": "task",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AdvancedFilterTaskRequest"
+                        }
                     },
                     {
                         "type": "integer",
@@ -308,6 +311,43 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.AdvancedFilterTaskRequest": {
+            "type": "object",
+            "properties": {
+                "fromDate": {
+                    "type": "string",
+                    "example": "2001-12-31"
+                },
+                "keyword": {
+                    "type": "string",
+                    "example": "Task"
+                },
+                "sorts": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "direction": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/dto.Direction"
+                                    }
+                                ],
+                                "example": "ASC"
+                            },
+                            "field": {
+                                "type": "string",
+                                "example": "created_at"
+                            }
+                        }
+                    }
+                },
+                "toDate": {
+                    "type": "string",
+                    "example": "2001-12-31"
+                }
+            }
+        },
         "dto.CreateTaskRequest": {
             "type": "object",
             "required": [
@@ -339,6 +379,17 @@ const docTemplate = `{
                     "example": "Create Task"
                 }
             }
+        },
+        "dto.Direction": {
+            "type": "string",
+            "enum": [
+                "ASC",
+                "DESC"
+            ],
+            "x-enum-varnames": [
+                "Asc",
+                "Desc"
+            ]
         },
         "dto.HttpResponse-any": {
             "type": "object",
@@ -551,9 +602,6 @@ const docTemplate = `{
         "model.User": {
             "type": "object",
             "properties": {
-                "UpdatedBy": {
-                    "type": "string"
-                },
                 "age": {
                     "type": "integer"
                 },
@@ -582,6 +630,9 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "updatedAt": {
+                    "type": "string"
+                },
+                "updatedBy": {
                     "type": "string"
                 },
                 "version": {

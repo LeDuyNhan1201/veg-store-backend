@@ -1,5 +1,29 @@
 basePath: /
 definitions:
+  dto.AdvancedFilterTaskRequest:
+    properties:
+      fromDate:
+        example: "2001-12-31"
+        type: string
+      keyword:
+        example: Task
+        type: string
+      sorts:
+        items:
+          properties:
+            direction:
+              allOf:
+              - $ref: '#/definitions/dto.Direction'
+              example: ASC
+            field:
+              example: created_at
+              type: string
+          type: object
+        type: array
+      toDate:
+        example: "2001-12-31"
+        type: string
+    type: object
   dto.CreateTaskRequest:
     properties:
       endDay:
@@ -24,6 +48,14 @@ definitions:
     - targetDay
     - title
     type: object
+  dto.Direction:
+    enum:
+    - ASC
+    - DESC
+    type: string
+    x-enum-varnames:
+    - Asc
+    - Desc
   dto.HttpResponse-any:
     properties:
       code:
@@ -162,8 +194,6 @@ definitions:
     type: object
   model.User:
     properties:
-      UpdatedBy:
-        type: string
       age:
         type: integer
       createdAt:
@@ -183,6 +213,8 @@ definitions:
       sex:
         type: boolean
       updatedAt:
+        type: string
+      updatedBy:
         type: string
       version:
         type: integer
@@ -291,15 +323,17 @@ paths:
       tags:
       - Tasks
   /tasks/search:
-    get:
+    post:
       consumes:
       - application/json
       description: Search tasks and return offset page
       parameters:
-      - description: Search keyword
-        in: query
-        name: keyword
-        type: string
+      - description: Filters
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AdvancedFilterTaskRequest'
       - description: Page number
         in: query
         name: page

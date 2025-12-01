@@ -31,7 +31,7 @@ func NewTaskHandler(
 // @Tags Tasks
 // @Accept json
 // @Produce json
-// @Param task body dto.AdvanceFilterTaskRequest true "Filters"
+// @Param task body dto.AdvancedFilterTaskRequest true "Filters"
 // @Param page query int false "Page number"
 // @Param size query int false "Page size"
 // @Success 200 {object} dto.HttpResponse[dto.OffsetPageResult[dto.TaskItem]]
