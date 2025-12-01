@@ -33,7 +33,7 @@ func (r *Repository[TEntity, TId]) Create(db *data.PostgresDB, ctx context.Conte
 func (r *Repository[TEntity, TId]) FindById(
 	db *data.PostgresDB, ctx context.Context,
 	id TId,
-	opt ...dto.FindByIdOption,
+	opt ...dto.FindByIDOption,
 ) (TEntity, error) {
 	var entity TEntity
 	queryBuilder := db.WithContext(ctx)
@@ -77,8 +77,7 @@ func (r *Repository[TEntity, TId]) OffsetPage(
 	// ------------------------
 	for _, whereCondition := range opt.Where {
 		field := strcase.ToSnake(whereCondition.Field)
-		queryBuilder = queryBuilder.Where(fmt.Sprintf("%s %s ?", field, whereCondition.Operator), whereCondition.Value)
-		r.Logger.Info(fmt.Sprintf("Applied WHERE condition: %s %s %v", field, whereCondition.Operator, whereCondition.Value))
+		queryBuilder = queryBuilder.Where(fmt.Sprintf("%s %s ?", field, whereCondition.Operator.String()), whereCondition.Value)
 	}
 
 	// ------------------------
@@ -86,11 +85,11 @@ func (r *Repository[TEntity, TId]) OffsetPage(
 	// ------------------------
 	for _, sortCondition := range opt.Sort {
 		field := strcase.ToSnake(sortCondition.Field)
-		dir := strings.ToUpper(sortCondition.Direction)
-		if dir != "ASC" && dir != "DESC" {
-			dir = "ASC"
+		direction := sortCondition.Direction
+		if direction.IsValid() {
+			direction = dto.Asc
 		}
-		queryBuilder = queryBuilder.Order(fmt.Sprintf("%s %s", field, dir))
+		queryBuilder = queryBuilder.Order(fmt.Sprintf("%s %s", field, direction))
 	}
 
 	// ------------------------

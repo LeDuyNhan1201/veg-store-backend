@@ -1,12 +1,12 @@
 package resthandler
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
 	"veg-store-backend/internal/application/context"
 	"veg-store-backend/internal/application/dto"
+	"veg-store-backend/internal/application/mapper"
 	"veg-store-backend/internal/application/service"
 )
 
@@ -31,35 +31,24 @@ func NewTaskHandler(
 // @Tags Tasks
 // @Accept json
 // @Produce json
-// @Param keyword query string false "Search keyword"
+// @Param task body dto.AdvanceFilterTaskRequest true "Filters"
 // @Param page query int false "Page number"
 // @Param size query int false "Page size"
 // @Success 200 {object} dto.HttpResponse[dto.OffsetPageResult[dto.TaskItem]]
 // @Failure 401 {object} dto.HttpResponse[string]
-// @Router /tasks/search [get]
+// @Router /tasks/search [post]
 func (h *TaskHandler) Search(ctx *context.Http) {
-	keyword := ctx.Gin.Query("keyword")
 	pageNum, _ := strconv.Atoi(ctx.Gin.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(ctx.Gin.DefaultQuery("size", "10"))
-
-	var where []dto.WhereCondition
-	if keyword != "" {
-		where = append(where, dto.WhereCondition{
-			Field:    "title",
-			Operator: "LIKE",
-			Value:    fmt.Sprintf("%%%s%%", keyword),
-		})
+	var request dto.AdvancedFilterTaskRequest
+	err := ctx.Gin.ShouldBindJSON(&request)
+	if err != nil {
+		ctx.Gin.Error(err)
+		return
 	}
 
-	page, err := h.taskService.Search(ctx.Gin, dto.OffsetPageOption{
-		Page:  int8(pageNum),
-		Size:  int8(pageSize),
-		Where: where,
-		Sort: []dto.SortCondition{
-			{Field: "createdAt", Direction: "DESC"},
-		},
-		Preload: []string{"Status"},
-	})
+	pageOptions := mapper.ToOffsetPageOption(request, pageNum, pageSize)
+	page, err := h.taskService.Search(ctx.Gin, pageOptions)
 	if err != nil {
 		ctx.Gin.Error(err)
 		return

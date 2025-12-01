@@ -12,5 +12,9 @@ func Init() {
 		if err != nil {
 			zap.L().Fatal("validation validator register error", zap.Error(err))
 		}
+		err = validate.RegisterValidation("fields", FieldsValidator)
+		if err != nil {
+			zap.L().Fatal("fields validator register error", zap.Error(err))
+		}
 	}
 }

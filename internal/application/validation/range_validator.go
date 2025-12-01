@@ -9,8 +9,14 @@ import (
 	"go.uber.org/zap"
 )
 
-var RangeValidator validator.Func = func(fieldLevel validator.FieldLevel) bool {
-	param := fieldLevel.Param() // ví dụ: "1-100"
+var RangeValidator validator.Func = func(fl validator.FieldLevel) bool {
+	// Pass nil values
+	value := fl.Field().String()
+	if value == "" {
+		return true
+	}
+
+	param := fl.Param() // ví dụ: "1-100"
 	if param == "" {
 		return true
 	}
@@ -18,7 +24,7 @@ var RangeValidator validator.Func = func(fieldLevel validator.FieldLevel) bool {
 	// parse minParam và maxParam từ tag
 	minParam, maxParam := ParseRangeParam(param)
 
-	field := fieldLevel.Field()
+	field := fl.Field()
 	switch field.Kind() {
 	case reflect.String:
 		length := float64(len(field.String()))

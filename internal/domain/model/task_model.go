@@ -19,3 +19,14 @@ type Task struct {
 func (Task) TableName() string {
 	return "task_tbl"
 }
+
+type TaskField string
+
+const (
+	FieldTitle     TaskField = "title"
+	FieldStatusID  TaskField = "status_id"
+	FieldStartDay  TaskField = "start_day"
+	FieldTargetDay TaskField = "target_day"
+	FieldEndDay    TaskField = "end_day"
+	FieldPriority  TaskField = "priority"
+)

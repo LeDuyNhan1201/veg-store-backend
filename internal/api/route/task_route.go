@@ -1,8 +1,8 @@
 package route
 
 import (
-	"veg-store-backend/internal/infrastructure/router"
 	"veg-store-backend/internal/api/resthandler"
+	"veg-store-backend/internal/infrastructure/router"
 )
 
 type TaskRoute struct {
@@ -21,7 +21,7 @@ func NewTaskRoutes(authHandler *resthandler.TaskHandler, router *router.HTTPRout
 func (r *TaskRoute) Setup() {
 	group := r.Router.AppGroup(r.Router.ApiPath + "/tasks")
 	{
-		r.Router.AppGET(group, "/search", r.Handler.Search)
+		r.Router.AppPOST(group, "/search", r.Handler.Search)
 		r.Router.AppGET(group, "", r.Handler.FindAll)
 		r.Router.AppGET(group, "/statuses", r.Handler.FindAllStatuses)
 	}

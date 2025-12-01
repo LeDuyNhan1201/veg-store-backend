@@ -33,11 +33,22 @@ func ToUUID(str string) UUID {
 type AuditingModel struct {
 	CreatedAt time.Time `gorm:"autoCreateTime;not null"`
 	CreatedBy string    `gorm:"type:varchar(100);not null"`
-	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updatedAt,omitempty"`
-	UpdatedBy *string   `gorm:"type:varchar(100)" json:"UpdatedBy,omitempty"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime"`
+	UpdatedBy *string   `gorm:"type:varchar(100)"`
 	IsDeleted bool      `gorm:"default:false;not null;index"`
 	Version   int64     `gorm:"not null"`
 }
+
+type AuditingFields string
+
+const (
+	FieldCreatedAt AuditingFields = "created_at"
+	FieldCreatedBy AuditingFields = "created_by"
+	FieldUpdatedAt AuditingFields = "updated_at"
+	FieldUpdatedBy AuditingFields = "updated_by"
+	FieldIsDeleted AuditingFields = "is_deleted"
+	FieldVersion   AuditingFields = "version"
+)
 
 func (m *AuditingModel) Created() *AuditingModel {
 	m.IsDeleted = false

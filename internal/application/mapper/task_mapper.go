@@ -47,3 +47,53 @@ func ToTask(request dto.CreateTaskRequest) model.Task {
 		TargetDay: &targetDay,
 	}
 }
+
+func ToOffsetPageOption(request dto.AdvancedFilterTaskRequest, page int, size int) dto.OffsetPageOption {
+	var where []dto.WhereCondition
+	if request.Keyword != "" {
+		where = append(where, dto.WhereCondition{
+			Field:    string(model.FieldTitle),
+			Operator: dto.OpILike,
+			Value:    "%" + request.Keyword + "%",
+		})
+	}
+
+	if request.FromDate != "" {
+		where = append(where, dto.WhereCondition{
+			Field:    string(model.FieldStartDay),
+			Operator: dto.OpGreaterThanOrEqual,
+			Value:    request.FromDate,
+		})
+	}
+
+	if request.ToDate != "" {
+		where = append(where, dto.WhereCondition{
+			Field:    string(model.FieldStartDay),
+			Operator: dto.OpLessThanOrEqual,
+			Value:    request.ToDate,
+		})
+	}
+
+	var sort []dto.SortCondition
+	if len(request.Sorts) == 0 {
+		sort = append(sort, dto.SortCondition{
+			Field:     "created_at",
+			Direction: dto.Desc,
+		})
+	}
+
+	for _, s := range request.Sorts {
+		sort = append(sort, dto.SortCondition{
+			Field:     s.Field,
+			Direction: s.Direction,
+		})
+	}
+
+	return dto.OffsetPageOption{
+		Page:    int8(page),
+		Size:    int8(size),
+		Where:   where,
+		Sort:    sort,
+		Preload: []string{"Status"},
+	}
+}
