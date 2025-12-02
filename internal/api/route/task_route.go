@@ -21,8 +21,12 @@ func NewTaskRoutes(authHandler *resthandler.TaskHandler, router *router.HTTPRout
 func (r *TaskRoute) Setup() {
 	group := r.Router.AppGroup(r.Router.ApiPath + "/tasks")
 	{
+		r.Router.AppGET(group, "/statuses", r.Handler.FindAllStatuses)
 		r.Router.AppPOST(group, "/search", r.Handler.Search)
 		r.Router.AppGET(group, "", r.Handler.FindAll)
-		r.Router.AppGET(group, "/statuses", r.Handler.FindAllStatuses)
+		r.Router.AppGET(group, "/:id", r.Handler.FindByID)
+		r.Router.AppPOST(group, "", r.Handler.Create)
+		r.Router.AppPUT(group, "/:id", r.Handler.Update)
+		r.Router.AppPATCH(group, "", r.Handler.UpdateStatus)
 	}
 }
