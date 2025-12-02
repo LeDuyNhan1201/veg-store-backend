@@ -32,12 +32,14 @@ type UpdateTaskStatusRequest struct {
 	StatusID string `json:"statusId" binding:"required,uuid" example:"5259ac80-1823-44d1-a701-0ed1e36fb38c"`
 }
 
+type SortTasksOption struct {
+	Field     string    `json:"field" binding:"taskFields"`
+	Direction Direction `json:"direction"`
+}
+
 type AdvancedFilterTaskRequest struct {
-	Keyword  string `json:"keyword" example:"Task"`
-	FromDate string `json:"fromDate" example:"2001-12-31"`
-	ToDate   string `json:"toDate" example:"2001-12-31"`
-	Sorts    []struct {
-		Field     string    `json:"field" binding:"fields" example:"created_at"`
-		Direction Direction `json:"direction" example:"ASC"`
-	} `json:"sorts"`
+	Keyword  string            `json:"keyword" example:"Task"`
+	FromDate string            `json:"fromDate" example:"2001-12-31"`
+	ToDate   string            `json:"toDate" example:"2001-12-31"`
+	Sorts    []SortTasksOption `json:"sorts" binding:"dive"` // dive to validate each element of slice
 }

@@ -19,7 +19,7 @@ security:
   public_endpoints:
     - /users/hello
     - /users/:id
-    - /auth/
+    - /auth
     - /auth/sign-up
     - /auth/refresh
     - /tasks/search
@@ -46,14 +46,14 @@ swagger:
 
 # Database configuration
 data:
-  enable_data_seeding: true # set to "true" for the first time then set to "false"
+  enable_data_seeding: false # set to "true" for the first time then set to "false"
   postgres:
     host: postgres
     port: 5432
     user: ${POSTGRES_USER:dummy}
     password: ${POSTGRES_PASSWORD:dummy}
     db_name: veg-store
-    ddl_mode: create-drop # create-drop | update | none, set to "create-drop" for the first time then set to "update" or "none"
+    ddl_mode: update # create-drop | update | none, set to "create-drop" for the first time then set to "update" or "none"
     ssl:
       mode: verify-full # verify-full | disable
       root_cert: ${CA_CERT_PATH:ca/ca.crt}

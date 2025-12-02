@@ -93,7 +93,7 @@ func newPrettyLogger(mode string) *zap.Logger {
 	jsonEncoder := zapcore.NewJSONEncoder(encoderConfig)
 	prettyEncoder := &PrettyJSONEncoder{jsonEncoder}
 
-	logLevel := zap.DebugLevel
+	logLevel := zap.InfoLevel
 	if mode == "prod" || mode == "production" {
 		logLevel = zap.InfoLevel
 	}

@@ -59,5 +59,6 @@ const (
 )
 
 func (d Direction) IsValid() bool {
-	return d == Asc || d == Desc
+	direction := string(d)
+	return direction == "Asc" || direction == "Desc" || direction == "ASC" || direction == "DESC"
 }

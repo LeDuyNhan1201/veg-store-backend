@@ -84,9 +84,12 @@ func (r *Repository[TEntity, TId]) OffsetPage(
 	// SORT conditions
 	// ------------------------
 	for _, sortCondition := range opt.Sort {
-		field := strcase.ToSnake(sortCondition.Field)
+		if sortCondition.Field == "" {
+			continue
+		}
+		field := sortCondition.Field
 		direction := sortCondition.Direction
-		if direction.IsValid() {
+		if !direction.IsValid() {
 			direction = dto.Asc
 		}
 		queryBuilder = queryBuilder.Order(fmt.Sprintf("%s %s", field, direction))

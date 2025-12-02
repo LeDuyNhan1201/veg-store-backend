@@ -25,12 +25,11 @@ func AllTaskFields() []string {
 	}
 }
 
-var FieldsValidator validator.Func = func(fl validator.FieldLevel) bool {
+var TaskFieldsValidator validator.Func = func(fl validator.FieldLevel) bool {
 	// Pass nil values
 	value := fl.Field().String()
 	if value == "" {
 		return true
 	}
-
 	return slices.Contains(AllTaskFields(), fl.Field().String())
 }
