@@ -102,6 +102,29 @@ func (h *TaskHandler) FindAll(ctx *context.Http) {
 	})
 }
 
+// FindByID godoc
+// @Summary Get Task by ID
+// @Description Get Task by ID
+// @Tags Tasks
+// @Accept json
+// @Produce json
+// @Param id path string true "Task ID"
+// @Success 200 {object} dto.HttpResponse[dto.TaskItem]
+// @Failure 400 {object} dto.HttpResponse[string]
+// @Router /tasks/{id} [get]
+func (h *TaskHandler) FindByID(ctx *context.Http) {
+	taskID := ctx.Gin.Param("id")
+	taskItem, err := h.taskService.FindByID(ctx.Gin, taskID)
+	if err != nil {
+		ctx.Gin.Error(err)
+		return
+	}
+	ctx.JSON(http.StatusOK, dto.HttpResponse[dto.TaskItem]{
+		HttpStatus: http.StatusOK,
+		Data:       taskItem,
+	})
+}
+
 // Create godoc
 // @Summary Create a task
 // @Description Create new task and return task id
@@ -129,5 +152,67 @@ func (h *TaskHandler) Create(ctx *context.Http) {
 	ctx.JSON(http.StatusCreated, dto.HttpResponse[string]{
 		HttpStatus: http.StatusCreated,
 		Data:       taskID,
+	})
+}
+
+// Update godoc
+// @Summary Update a task
+// @Description Update existing task and return task id
+// @Tags Tasks
+// @Accept json
+// @Produce json
+// @Param id path string true "Task ID"
+// @Param task body dto.UpdateTaskRequest true "Task info"
+// @Success 200 {object} dto.HttpResponse[string]
+// @Failure 401 {object} dto.HttpResponse[string]
+// @Router /tasks/{id} [put]
+func (h *TaskHandler) Update(ctx *context.Http) {
+	taskID := ctx.Gin.Param("id")
+	var request dto.UpdateTaskRequest
+	err := ctx.Gin.ShouldBindJSON(&request)
+	if err != nil {
+		ctx.Gin.Error(err)
+		return
+	}
+
+	updatedID, err := h.taskService.Update(ctx.Gin, taskID, request)
+	if err != nil {
+		ctx.Gin.Error(err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.HttpResponse[string]{
+		HttpStatus: http.StatusOK,
+		Data:       updatedID,
+	})
+}
+
+// UpdateStatus godoc
+// @Summary Update a task's status
+// @Description Update existing task's status and return task id
+// @Tags Tasks
+// @Accept json
+// @Produce json
+// @Param task body dto.UpdateTaskStatusRequest true "Task status info"
+// @Success 200 {object} dto.HttpResponse[string]
+// @Failure 401 {object} dto.HttpResponse[string]
+// @Router /tasks [patch]
+func (h *TaskHandler) UpdateStatus(ctx *context.Http) {
+	var request dto.UpdateTaskStatusRequest
+	err := ctx.Gin.ShouldBindJSON(&request)
+	if err != nil {
+		ctx.Gin.Error(err)
+		return
+	}
+
+	updatedID, err := h.taskService.UpdateStatus(ctx.Gin, request)
+	if err != nil {
+		ctx.Gin.Error(err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.HttpResponse[string]{
+		HttpStatus: http.StatusOK,
+		Data:       updatedID,
 	})
 }

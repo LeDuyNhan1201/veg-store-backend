@@ -7,14 +7,14 @@ import (
 type SubError struct {
 	Code       string
 	MessageKey string
-	Args       []map[string]interface{}
+	Args       []map[string]any
 }
 
 func (e *SubError) Error() string {
 	return e.Code
 }
 
-func (e *SubError) MoreInfo(Args ...map[string]interface{}) *SubError {
+func (e *SubError) MoreInfo(Args ...map[string]any) *SubError {
 	e.Args = append(e.Args, Args...)
 	return e
 }
@@ -47,11 +47,13 @@ type AuthError struct {
 }
 
 type ValidationError struct {
-	Email    *SubError
-	Required *SubError
-	Range    *SubError
-	Max      *SubError
-	Min      *SubError
+	Email      *SubError
+	Required   *SubError
+	Range      *SubError
+	Max        *SubError
+	Min        *SubError
+	UUID       *SubError
+	TaskFields *SubError
 }
 
 type AppError struct {
@@ -151,16 +153,24 @@ func Init() *AppError {
 				MessageKey: "Validation.Required",
 			},
 			Range: &SubError{
-				Code:       "validation/forbidden",
+				Code:       "validation/range",
 				MessageKey: "Validation.Range",
 			},
 			Max: &SubError{
-				Code:       "validation/forbidden",
+				Code:       "validation/max",
 				MessageKey: "Validation.Max",
 			},
 			Min: &SubError{
-				Code:       "validation/forbidden",
+				Code:       "validation/min",
 				MessageKey: "Validation.Min",
+			},
+			UUID: &SubError{
+				Code:       "validation/uuid",
+				MessageKey: "Validation.UUID",
+			},
+			TaskFields: &SubError{
+				Code:       "validation/task_fields",
+				MessageKey: "Validation.TaskFields",
 			},
 		},
 	}
@@ -170,18 +180,20 @@ func Init() *AppError {
 }
 
 func (e *AppError) initValidationMessageKeys() {
-	var validationMessages = map[string]string{
-		"email":    e.Validation.Required.MessageKey,
-		"required": e.Validation.Required.MessageKey,
-		"min":      e.Validation.Min.MessageKey,
-		"max":      e.Validation.Max.MessageKey,
-		"range":    e.Validation.Range.MessageKey,
+	validationMessages := map[string]string{
+		"email":      e.Validation.Required.MessageKey,
+		"required":   e.Validation.Required.MessageKey,
+		"min":        e.Validation.Min.MessageKey,
+		"max":        e.Validation.Max.MessageKey,
+		"range":      e.Validation.Range.MessageKey,
+		"uuid":       e.Validation.UUID.MessageKey,
+		"taskFields": e.Validation.TaskFields.MessageKey,
 	}
 	e.ValidationMessages = validationMessages
 }
 
-func (e *AppError) HandleParamForMessageKey(messageKey, field, param string) map[string]interface{} {
-	params := make(map[string]interface{})
+func (e *AppError) HandleParamForMessageKey(messageKey, field, param string) map[string]any {
+	params := make(map[string]any)
 	switch messageKey {
 	case e.Validation.Min.MessageKey:
 		params["Min"] = param
@@ -198,19 +210,21 @@ func (e *AppError) HandleParamForMessageKey(messageKey, field, param string) map
 
 func (e *AppError) buildErrorMap() {
 	e.errorMap = map[string]*SubError{
-		e.NotFound.User.Code:        e.NotFound.User,
-		e.NotFound.Product.Code:     e.NotFound.Product,
-		e.Invalid.Token.Code:        e.Invalid.Token,
-		e.Invalid.Email.Code:        e.Invalid.Email,
-		e.Invalid.Username.Code:     e.Invalid.Username,
-		e.Invalid.Fields.Code:       e.Invalid.Fields,
-		e.Auth.Unauthenticated.Code: e.Auth.Unauthenticated,
-		e.Auth.WrongPassword.Code:   e.Auth.WrongPassword,
-		e.Auth.Forbidden.Code:       e.Auth.Forbidden,
-		e.Validation.Email.Code:     e.Validation.Email,
-		e.Validation.Required.Code:  e.Validation.Required,
-		e.Validation.Range.Code:     e.Validation.Range,
-		e.Validation.Max.Code:       e.Validation.Max,
-		e.Validation.Min.Code:       e.Validation.Min,
+		e.NotFound.User.Code:         e.NotFound.User,
+		e.NotFound.Product.Code:      e.NotFound.Product,
+		e.Invalid.Token.Code:         e.Invalid.Token,
+		e.Invalid.Email.Code:         e.Invalid.Email,
+		e.Invalid.Username.Code:      e.Invalid.Username,
+		e.Invalid.Fields.Code:        e.Invalid.Fields,
+		e.Auth.Unauthenticated.Code:  e.Auth.Unauthenticated,
+		e.Auth.WrongPassword.Code:    e.Auth.WrongPassword,
+		e.Auth.Forbidden.Code:        e.Auth.Forbidden,
+		e.Validation.Email.Code:      e.Validation.Email,
+		e.Validation.Required.Code:   e.Validation.Required,
+		e.Validation.Range.Code:      e.Validation.Range,
+		e.Validation.Max.Code:        e.Validation.Max,
+		e.Validation.Min.Code:        e.Validation.Min,
+		e.Validation.UUID.Code:       e.Validation.UUID,
+		e.Validation.TaskFields.Code: e.Validation.TaskFields,
 	}
 }

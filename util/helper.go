@@ -22,11 +22,24 @@ func GetLocale(ginContext *gin.Context) string {
 	return "en"
 }
 
-func GetTraceId(ginContext *gin.Context) string {
+func GetTraceID(ginContext *gin.Context) string {
 	if v, ok := ginContext.Get(TraceIDContextKey); ok {
 		return v.(string)
 	}
 	return ""
+}
+
+func ParseDate(dayStr, timezone string) time.Time {
+	format := "2006-01-02"
+	loc, err := time.LoadLocation(timezone)
+	if err != nil {
+		panic("Failed to load location: " + err.Error())
+	}
+	day, err := time.ParseInLocation(format, dayStr, loc)
+	if err != nil {
+		panic("Failed to load location: " + err.Error())
+	}
+	return day
 }
 
 // ParseDuration support “d” (day), “h”, “m”, “s”

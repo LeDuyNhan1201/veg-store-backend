@@ -15,7 +15,9 @@ import (
 type TaskService interface {
 	Search(ctx context.Context, opt dto.OffsetPageOption) (*dto.OffsetPageResult[dto.TaskItem], error)
 	FindAll(ctx context.Context) ([]dto.TaskItem, error)
+	FindByID(ctx context.Context, id string) (dto.TaskItem, error)
 	Create(ctx context.Context, request dto.CreateTaskRequest) (string, error)
+	Update(ctx context.Context, id string, request dto.UpdateTaskRequest) (string, error)
 	UpdateStatus(ctx context.Context, request dto.UpdateTaskStatusRequest) (string, error)
 	HardDelete(ctx context.Context, id string) (string, error)
 }
@@ -73,6 +75,15 @@ func (s *taskService) FindAll(ctx context.Context) ([]dto.TaskItem, error) {
 	return util.Map(statuses, func(t *model.Task) dto.TaskItem { return mapper.ToTaskItem(t) }), nil
 }
 
+func (s *taskService) FindByID(ctx context.Context, id string) (dto.TaskItem, error) {
+	existing, err := s.Repository.FindById(s.DB, ctx, model.ToUUID(id))
+	if err != nil {
+		return dto.TaskItem{}, s.Error.NotFound.Task
+	}
+
+	return mapper.ToTaskItem(existing), nil
+}
+
 func (s *taskService) Create(ctx context.Context, request dto.CreateTaskRequest) (string, error) {
 	// Map DTO -> ORM Model
 	newTask := mapper.ToTask(request)
@@ -84,6 +95,31 @@ func (s *taskService) Create(ctx context.Context, request dto.CreateTaskRequest)
 	}
 
 	return newTask.ID.String(), nil
+}
+
+func (s *taskService) Update(ctx context.Context, id string, request dto.UpdateTaskRequest) (string, error) {
+	// Find existing task then set new values
+	existing, err := s.Repository.FindById(s.DB, ctx, model.ToUUID(id))
+	if err != nil {
+		return "", s.Error.NotFound.Task
+	}
+	startDay := util.ParseDate(request.StartDay, util.DefaultTimezone)
+	targetDay := util.ParseDate(request.TargetDay, util.DefaultTimezone)
+	endDay := util.ParseDate(request.EndDay, util.DefaultTimezone)
+
+	existing.Title = request.Title
+	existing.StatusID = model.ToUUID(request.StatusID)
+	existing.StartDay = &startDay
+	existing.TargetDay = &targetDay
+	existing.EndDay = &endDay
+
+	// Update existing task if found
+	err = s.Repository.Update(s.DB, ctx, existing)
+	if err != nil {
+		return "", s.Error.Fail.UpdateTask
+	}
+
+	return existing.ID.String(), nil
 }
 
 func (s *taskService) UpdateStatus(ctx context.Context, request dto.UpdateTaskStatusRequest) (string, error) {

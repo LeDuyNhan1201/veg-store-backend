@@ -112,3 +112,11 @@ other = "{{.Field}} không được vượt quá {{.Max}} ký tự"
 one = "{{.Field}} phải có ít nhất {{.Min}} ký tự"
 other = "{{.Field}} phải có ít nhất {{.Min}} ký tự"
 
+[Validation.UUID]
+one = "{{.Field}} phải là một UUID hợp lệ"
+other = "{{.Field}} phải là một UUID hợp lệ"
+
+[Validation.TaskFields]
+one = "{{.Field}} không hợp lệ cho tác vụ"
+other = "{{.Field}} không hợp lệ cho tác vụ"
+

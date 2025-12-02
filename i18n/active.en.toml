@@ -143,3 +143,11 @@ other = "{{.Field}} cannot exceed {{.Max}} characters for one or more entries"
 [Validation.Min]
 one = "{{.Field}} must be at least {{.Min}} characters"
 other = "{{.Field}} must be at least {{.Min}} characters for one or more"
+
+[Validation.UUID]
+one = "{{.Field}} must be a valid UUID"
+other = "{{.Field}} must be valid UUIDs for one or more entries"
+
+[Validation.TaskFields]
+one = "{{.Field}} is invalid for task"
+other = "{{.Field}} is invalid for task for one or more entries"

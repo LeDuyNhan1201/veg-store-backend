@@ -1,12 +1,15 @@
 package util
 
-const DefaultLocale = "en"
-const AppContextKey = "app_context"
-const LocaleContextKey = "locale"
-const TraceIDContextKey = "trace_id"
-const LocaleMiddlewarePriority = 0
-const HTTPMiddlewarePriority = 1
-const JWTMiddlewarePriority = 2
-const TraceIDMiddlewarePriority = 3
-const ValidationMiddlewarePriority = 4
-const ErrorHandlingMiddlewarePriority = 5
+const (
+	DefaultLocale                   = "en"
+	DefaultTimezone                 = "Asia/Ho_Chi_Minh"
+	AppContextKey                   = "app_context"
+	LocaleContextKey                = "locale"
+	TraceIDContextKey               = "trace_id"
+	LocaleMiddlewarePriority        = 0
+	HTTPMiddlewarePriority          = 1
+	JWTMiddlewarePriority           = 2
+	TraceIDMiddlewarePriority       = 3
+	ValidationMiddlewarePriority    = 4
+	ErrorHandlingMiddlewarePriority = 5
+)

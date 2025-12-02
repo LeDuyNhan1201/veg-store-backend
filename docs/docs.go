@@ -160,6 +160,44 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "patch": {
+                "description": "Update existing task's status and return task id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Update a task's status",
+                "parameters": [
+                    {
+                        "description": "Task status info",
+                        "name": "task",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateTaskStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-string"
+                        }
+                    }
+                }
             }
         },
         "/tasks/search": {
@@ -238,6 +276,89 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/dto.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/tasks/{id}": {
+            "get": {
+                "description": "Get Task by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Get Task by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-dto_TaskItem"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-string"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update existing task and return task id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Update a task",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Task info",
+                        "name": "task",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateTaskRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HttpResponse-string"
                         }
                     }
                 }
@@ -323,23 +444,10 @@ const docTemplate = `{
                     "example": "Task"
                 },
                 "sorts": {
+                    "description": "dive to validate each element of slice",
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "properties": {
-                            "direction": {
-                                "allOf": [
-                                    {
-                                        "$ref": "#/definitions/dto.Direction"
-                                    }
-                                ],
-                                "example": "ASC"
-                            },
-                            "field": {
-                                "type": "string",
-                                "example": "created_at"
-                            }
-                        }
+                        "$ref": "#/definitions/dto.SortTasksOption"
                     }
                 },
                 "toDate": {
@@ -463,6 +571,23 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.HttpResponse-dto_TaskItem": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/dto.TaskItem"
+                },
+                "http_status": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.HttpResponse-dto_Tokens": {
             "type": "object",
             "properties": {
@@ -562,6 +687,17 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.SortTasksOption": {
+            "type": "object",
+            "properties": {
+                "direction": {
+                    "$ref": "#/definitions/dto.Direction"
+                },
+                "field": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.TaskItem": {
             "type": "object",
             "properties": {
@@ -596,6 +732,55 @@ const docTemplate = `{
                 },
                 "refresh_token": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.UpdateTaskRequest": {
+            "type": "object",
+            "required": [
+                "endDay",
+                "startDay",
+                "statusId",
+                "targetDay",
+                "title"
+            ],
+            "properties": {
+                "endDay": {
+                    "type": "string",
+                    "example": "2001-12-31"
+                },
+                "startDay": {
+                    "type": "string",
+                    "example": "2001-12-31"
+                },
+                "statusId": {
+                    "type": "string",
+                    "example": "5259ac80-1823-44d1-a701-0ed1e36fb38c"
+                },
+                "targetDay": {
+                    "type": "string",
+                    "example": "2001-12-31"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Update Task"
+                }
+            }
+        },
+        "dto.UpdateTaskStatusRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "statusId"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "5259ac80-1823-44d1-a701-0ed1e36fb38c"
+                },
+                "statusId": {
+                    "type": "string",
+                    "example": "5259ac80-1823-44d1-a701-0ed1e36fb38c"
                 }
             }
         },

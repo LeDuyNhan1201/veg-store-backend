@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+
 	"veg-store-backend/internal/application/dto"
 	"veg-store-backend/internal/application/exception"
 	"veg-store-backend/internal/infrastructure/core"
@@ -67,7 +68,7 @@ func (m *ErrorHandlingMiddleware) handler() gin.HandlerFunc {
 		}
 
 		// Get trace_id
-		traceID := util.GetTraceId(ginContext)
+		traceID := util.GetTraceID(ginContext)
 
 		m.Logger.Error("Request failed",
 			zap.String("trace_id", traceID),

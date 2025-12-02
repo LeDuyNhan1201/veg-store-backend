@@ -9,16 +9,9 @@ definitions:
         example: Task
         type: string
       sorts:
+        description: dive to validate each element of slice
         items:
-          properties:
-            direction:
-              allOf:
-              - $ref: '#/definitions/dto.Direction'
-              example: ASC
-            field:
-              example: created_at
-              type: string
-          type: object
+          $ref: '#/definitions/dto.SortTasksOption'
         type: array
       toDate:
         example: "2001-12-31"
@@ -103,6 +96,17 @@ definitions:
       message:
         type: string
     type: object
+  dto.HttpResponse-dto_TaskItem:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/dto.TaskItem'
+      http_status:
+        type: integer
+      message:
+        type: string
+    type: object
   dto.HttpResponse-dto_Tokens:
     properties:
       code:
@@ -168,6 +172,13 @@ definitions:
     - password
     - username
     type: object
+  dto.SortTasksOption:
+    properties:
+      direction:
+        $ref: '#/definitions/dto.Direction'
+      field:
+        type: string
+    type: object
   dto.TaskItem:
     properties:
       endDay:
@@ -191,6 +202,42 @@ definitions:
         type: string
       refresh_token:
         type: string
+    type: object
+  dto.UpdateTaskRequest:
+    properties:
+      endDay:
+        example: "2001-12-31"
+        type: string
+      startDay:
+        example: "2001-12-31"
+        type: string
+      statusId:
+        example: 5259ac80-1823-44d1-a701-0ed1e36fb38c
+        type: string
+      targetDay:
+        example: "2001-12-31"
+        type: string
+      title:
+        example: Update Task
+        type: string
+    required:
+    - endDay
+    - startDay
+    - statusId
+    - targetDay
+    - title
+    type: object
+  dto.UpdateTaskStatusRequest:
+    properties:
+      id:
+        example: 5259ac80-1823-44d1-a701-0ed1e36fb38c
+        type: string
+      statusId:
+        example: 5259ac80-1823-44d1-a701-0ed1e36fb38c
+        type: string
+    required:
+    - id
+    - statusId
     type: object
   model.User:
     properties:
@@ -297,6 +344,31 @@ paths:
       summary: Get All Tasks
       tags:
       - Tasks
+    patch:
+      consumes:
+      - application/json
+      description: Update existing task's status and return task id
+      parameters:
+      - description: Task status info
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTaskStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-string'
+      summary: Update a task's status
+      tags:
+      - Tasks
     post:
       consumes:
       - application/json
@@ -320,6 +392,61 @@ paths:
           schema:
             $ref: '#/definitions/dto.HttpResponse-string'
       summary: Create a task
+      tags:
+      - Tasks
+  /tasks/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get Task by ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-dto_TaskItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-string'
+      summary: Get Task by ID
+      tags:
+      - Tasks
+    put:
+      consumes:
+      - application/json
+      description: Update existing task and return task id
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Task info
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.HttpResponse-string'
+      summary: Update a task
       tags:
       - Tasks
   /tasks/search:
