@@ -28,5 +28,6 @@ func (r *TaskRoute) Setup() {
 		r.Router.AppPOST(group, "", r.Handler.Create)
 		r.Router.AppPUT(group, "/:id", r.Handler.Update)
 		r.Router.AppPATCH(group, "", r.Handler.UpdateStatus)
+		r.Router.AppDELETE(group, "/:id", r.Handler.HardDelete)
 	}
 }

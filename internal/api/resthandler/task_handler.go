@@ -216,3 +216,26 @@ func (h *TaskHandler) UpdateStatus(ctx *context.Http) {
 		Data:       updatedID,
 	})
 }
+
+// HardDelete godoc
+// @Summary Hard Delete a task
+// @Description Permanently delete a task by ID
+// @Tags Tasks
+// @Accept json
+// @Produce json
+// @Param id path string true "Task ID"
+// @Success 200 {object} dto.HttpResponse[string]
+// @Failure 400 {object} dto.HttpResponse[string]
+// @Router /tasks/{id} [delete]
+func (h *TaskHandler) HardDelete(ctx *context.Http) {
+	taskID := ctx.Gin.Param("id")
+	deletedID, err := h.taskService.HardDelete(ctx.Gin, taskID)
+	if err != nil {
+		ctx.Gin.Error(err)
+		return
+	}
+	ctx.JSON(http.StatusOK, dto.HttpResponse[string]{
+		HttpStatus: http.StatusOK,
+		Data:       deletedID,
+	})
+}

@@ -37,7 +37,7 @@ jwt:
 
 cors:
   allow_origins: [ "http://localhost:5173" ]
-  allow_methods: [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ]
+  allow_methods: [ "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS" ]
   allow_headers: [ "Content-Type", "Authorization" , "No-Auth"]
   allow_credentials: true
 
